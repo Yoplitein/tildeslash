@@ -1,0 +1,20 @@
+#!/usr/bin/python
+#Simple script to keep an SSH session alive.
+#Also works as a stopwatch.
+
+import time, datetime, sys
+from string import Template
+
+count = 0
+
+print("Going AFK.")
+
+try:
+        while True:
+                sys.stdout.write(Template("\rStayin' Alive! You have been AFK for $time     ").substitute(time=str(datetime.timedelta(seconds=count))))
+                sys.stdout.flush()
+                count = count + 1
+                time.sleep(1)
+except KeyboardInterrupt:
+        print("\nYour SSH session is still here! :D")
+        sys.exit() #Some environments have exit as a string variable.
