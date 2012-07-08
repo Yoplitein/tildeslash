@@ -55,7 +55,7 @@ alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 
 #Makes man not prompt for section (stupid openSUSE behaviour)
-alias man='env $MAN_POSIXLY_CORRECT=true man'
+alias man='env MAN_POSIXLY_CORRECT=true man'
 
 #Colors are fun! wheee!!
 alias grep='grep --color=auto'
