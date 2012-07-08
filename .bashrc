@@ -52,8 +52,12 @@ alias ls='ls -A1 --color=auto'
 alias lsl='ls -A1l --color=auto'
 alias psa='ps -Ao user,pid,time,cmd'
 alias cls='clear'
+alias shlvl='echo SHLVL is $SHLVL'
 
 #Colors are fun! wheee!!
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
+
+#Display $SHLVL on exit
+trap 'echo SHLVL is now $(expr $SHLVL - 1); exit' 0
