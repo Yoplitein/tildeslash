@@ -52,6 +52,7 @@ if __name__ == "__main__":
         file.write(fileContents)
         file.flush()
         file.close()
-        log("Wrote %s to disk." % fileName)
+        #Quit spammin' my syslog
+        #log("Wrote %s to disk." % fileName)
     
-    log("Done.")
+    log("Successfully updated all files.")
