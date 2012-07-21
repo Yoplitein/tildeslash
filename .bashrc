@@ -53,6 +53,7 @@ alias lsl='ls -A1l --color=auto'
 alias psa='ps -Ao user,pid,time,cmd'
 alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
+alias tree='tree -aAC'
 
 #Makes man not prompt for section (stupid openSUSE behaviour)
 alias man='env MAN_POSIXLY_CORRECT=true man'
