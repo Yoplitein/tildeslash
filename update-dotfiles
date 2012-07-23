@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #This fetches the latest files from the repo and puts them in the given folder
+#Intended to be run on *nix systems (for syslog)
 from __future__ import print_function
 from urllib import urlopen
 from argparse import ArgumentParser
@@ -7,11 +8,13 @@ import json, os, syslog
 
 if __name__ == "__main__":
     #Get options
-    parser = ArgumentParser(usage="update.py")
+    parser = ArgumentParser(usage="update-dotfiles")
     parser.add_argument("-c", "--cron", dest="runSilent",
                 help="run in cronjob (silent) mode", action="store_true", default=False)
     parser.add_argument("-d", "--dir", dest="directory",
                 help="directory to save files to, default ~/", default=os.getenv("HOME"))
+    parser.add_argument("-C", "--no-check-hash", dest="logHash",
+                help="don't check for revision hash in .dotfileshash", action="store_false", default=True)
     
     args = parser.parse_args()
     
@@ -20,6 +23,7 @@ if __name__ == "__main__":
     def silentLog(msg):
         syslog.syslog("[dir %s] %s" % (os.path.basename(os.getcwd()), msg))
     
+    #Use syslog if we're running in cron mode
     if args.runSilent:
         log = silentLog
     
@@ -31,15 +35,31 @@ if __name__ == "__main__":
             os.sys.exit()
     
     #Get the path for the files on BitBucket
-    revisionHash = json.loads(\
-    urlopen("http://api.bitbucket.org/1.0/repositories/Yoplitein/tildeslash/changesets")\
-                                                    .read())["changesets"][-1]["node"]
+    changesetsJson = urlopen("http://api.bitbucket.org/1.0/repositories/Yoplitein/tildeslash/changesets")
+    
+    #Did the server mess up, etc?
+    if not changesetsJson.getcode() is 200:
+        log("Error: unable to retrieve revision hash")
+        log("Error: server returned status code %d" % changesetsJson.getcode())
+        os.sys.exit()
+    
+    revisionHash = json.loads(changesetsJson.read())["changesets"][-1]["node"]
     baseURL = "https://bitbucket.org/Yoplitein/tildeslash/raw/" + revisionHash + "/"
     
     fileNames = [".bash_logout", ".bash_profile", ".bashrc", ".vimrc", "bin/afk"]
     
-    #Make sure we're in the home directory
+    #Change to the specified directory
     os.chdir(args.directory)
+    
+    #Check for a hash, if enabled
+    if args.logHash:
+        try:
+            upHash = open(".dotfileshash").read()
+            if(upHash == revisionHash):
+                log("All files are at latest revision, exiting")
+                os.sys.exit()
+        except IOError:
+            pass
     
     #Make sure ~/bin exists
     if not os.path.exists("bin"):
@@ -48,11 +68,27 @@ if __name__ == "__main__":
     #Write the files
     for fileName in fileNames:
         file = open(fileName, "w")
-        fileContents = urlopen(baseURL + fileName).read()
-        file.write(fileContents)
+        bitbucketFile = urlopen(baseURL + fileName)
+        
+        #Did the server mess up, etc?
+        if not bitbucketFile.getcode() is 200:
+            log("Error: unable to retrieve file %s" % fileName)
+            log("Error: server returned status code %d" % bitbucketFile.getcode())
+            os.sys.exit()
+        
+        file.write(bitbucketFile.read())
         file.flush()
         file.close()
         #Quit spammin' my syslog
         #log("Wrote %s to disk." % fileName)
     
-    log("Successfully updated all files.")
+    #Write hash to .dotfileshash
+    if args.logHash:
+        try:
+            hashFile = open(".dotfileshash", "w")
+            hashFile.write(revisionHash)
+            hashFile.close()
+        except IOError:
+            log("Unable to save revision hash")
+    
+    log("Successfully updated all files to revision %s." % revisionHash)
