@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #This fetches the latest files from the repo and puts them in the given folder
-#Intended to be run on *nix systems (for syslog)
-from __future__ import print_function
+from __future__ import print_function, with_statement
 from urllib import urlopen
 from argparse import ArgumentParser
 import json, os, syslog
@@ -18,8 +17,10 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
+    #By default, we log with print
     log = print
     
+    #Wrapper for syslog to prepend dir information
     def silentLog(msg):
         syslog.syslog("[dir %s] %s" % (os.path.basename(os.getcwd()), msg))
     
@@ -34,19 +35,26 @@ if __name__ == "__main__":
             log("Aborting.")
             os.sys.exit()
     
-    #Get the path for the files on BitBucket
-    changesetsJson = urlopen("http://api.bitbucket.org/1.0/repositories/Yoplitein/tildeslash/changesets")
+    #Fetch a file and make sure the server didn't mess up
+    def getFile(url, logName):
+        file = urlopen(url)
+        status = file.getcode()
+        
+        #Did the server mess up?
+        if not status is 200:
+            log("Error fetching %s, server returned status code %s" % (logName, status))
+            os.sys.exit()
+        
+        #It didn't, return the file.
+        contents = file.read()
+        file.close()
+        return contents
     
-    #Did the server mess up, etc?
-    if not changesetsJson.getcode() is 200:
-        log("Error: unable to retrieve revision hash")
-        log("Error: server returned status code %d" % changesetsJson.getcode())
-        os.sys.exit()
-    
-    revisionHash = json.loads(changesetsJson.read())["changesets"][-1]["node"]
+    #Get the revision hash to calculate the base URL
+    revisionHash = json.loads(\
+        getFile("http://api.bitbucket.org/1.0/repositories/Yoplitein/tildeslash/changesets", "changesets"))\
+        ["changesets"][-1]["node"]
     baseURL = "https://bitbucket.org/Yoplitein/tildeslash/raw/" + revisionHash + "/"
-    
-    fileNames = [".bash_logout", ".bash_profile", ".bashrc", ".vimrc", "bin/afk"]
     
     #Change to the specified directory
     os.chdir(args.directory)
@@ -54,41 +62,47 @@ if __name__ == "__main__":
     #Check for a hash, if enabled
     if args.logHash:
         try:
-            upHash = open(".dotfileshash").read()
+            upHash = ""
+            with open(".dotfileshash", "r") as f:
+                upHash = f.read()
             if(upHash == revisionHash):
                 log("All files are at latest revision, exiting")
                 os.sys.exit()
         except IOError:
             pass
     
-    #Make sure ~/bin exists
-    if not os.path.exists("bin"):
-        os.mkdir("bin")
+    #Get the file and folder lists
+    fileFolderList = getFile(baseURL + "files.txt", "file and folder list").split("--FOLDERS--")
+    fileNames = fileFolderList[0].split("\n")
+    folderNames = fileFolderList[1].split("\n")
+    
+    #Make sure each folder exists
+    for folder in folderNames:
+        if not os.path.exists(folder):
+            os.mkdir(folder)
     
     #Write the files
     for fileName in fileNames:
-        file = open(fileName, "w")
-        bitbucketFile = urlopen(baseURL + fileName)
+        #we're evaluating this here so we don't exit with open file handlers if there's an error
+        bbFile = getFile(baseURL + fileName, fileName)
         
-        #Did the server mess up, etc?
-        if not bitbucketFile.getcode() is 200:
-            log("Error: unable to retrieve file %s" % fileName)
-            log("Error: server returned status code %d" % bitbucketFile.getcode())
+        try:
+            with open(fileName, "w") as file:
+                file.write(bbFile)
+                file.flush()
+                file.close()
+        except IOError as e:
+            log("Error: Unable to write %s to disk. (%s)" % e)
+            log("Exiting.")
             os.sys.exit()
-        
-        file.write(bitbucketFile.read())
-        file.flush()
-        file.close()
-        #Quit spammin' my syslog
-        #log("Wrote %s to disk." % fileName)
     
     #Write hash to .dotfileshash
     if args.logHash:
         try:
-            hashFile = open(".dotfileshash", "w")
-            hashFile.write(revisionHash)
-            hashFile.close()
-        except IOError:
-            log("Unable to save revision hash")
+            with open(".dotfileshash", "w") as hashFile:
+                hashFile.write(revisionHash)
+                hashFile.flush()
+        except IOError as e:
+            log("Unable to save revision hash. (%s)" % e)
     
     log("Successfully updated all files to revision %s." % revisionHash)

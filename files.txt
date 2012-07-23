@@ -1,0 +1,7 @@
+.bashrc
+.bash_profile
+.bash_logout
+.vimrc
+bin/afk
+--FOLDERS--
+bin
