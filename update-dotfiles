@@ -73,8 +73,21 @@ if __name__ == "__main__":
     
     #Get the file and folder lists
     fileFolderList = getFile(baseURL + "files.txt", "file and folder list").split("--FOLDERS--")
-    fileNames = fileFolderList[0].split("\n")[0:-1] #last file has \n at end
-    folderNames = fileFolderList[1].split("\n")[1:] #first folder has \n at beginning
+    fileNames = fileFolderList[0].split("\n")
+    folderNames = fileFolderList[1].split("\n")
+    
+    #Remove empty strings from file and folder list
+    try:
+        while True:
+            fileNames.remove('')
+    except ValueError:
+        pass
+    
+    try:
+        while True:
+            folderNames.remove('')
+    except ValueError:
+        pass
     
     #Make sure each folder exists
     for folder in folderNames:
