@@ -73,8 +73,8 @@ if __name__ == "__main__":
     
     #Get the file and folder lists
     fileFolderList = getFile(baseURL + "files.txt", "file and folder list").split("--FOLDERS--")
-    fileNames = fileFolderList[0].split("\n")
-    folderNames = fileFolderList[1].split("\n")
+    fileNames = fileFolderList[0].split("\n")[0:-1] #last file has \n at end
+    folderNames = fileFolderList[1].split("\n")[1:] #first folder has \n at beginning
     
     #Make sure each folder exists
     for folder in folderNames:
@@ -92,9 +92,11 @@ if __name__ == "__main__":
                 file.flush()
                 file.close()
         except IOError as e:
-            log("Error: Unable to write %s to disk. (%s)" % e)
+            log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
             log("Exiting.")
             os.sys.exit()
+        if not args.runSilent:
+            log("Wrote %s to disk." % fileName)
     
     #Write hash to .dotfileshash
     if args.logHash:
