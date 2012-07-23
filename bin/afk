@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #Simple script to keep an SSH session alive.
 #Also works as a stopwatch.
 
