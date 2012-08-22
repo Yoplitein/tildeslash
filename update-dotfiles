@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #This fetches the latest files from the repo and puts them in the given folder
-from __future__ import print_function, with_statement
-from urllib import urlopen
+from __future__ import with_statement
+from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
-import json, os, syslog
+import os, syslog
 
 if __name__ == "__main__":
     #Get options
@@ -18,7 +18,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     #By default, we log with print
-    log = print
+    def fauxPrint(message):
+        os.sys.stdout.write(message + "\n")
+        os.sys.stdout.flush()
+    
+    log = fauxPrint
     
     #Wrapper for syslog to prepend dir information
     def silentLog(msg):
@@ -27,6 +31,14 @@ if __name__ == "__main__":
     #Use syslog if we're running in cron mode
     if args.runSilent:
         log = silentLog
+    
+    try:
+        import json
+    except ImportError:
+        try:
+            import simplejson as json
+        except ImportError:
+            log("json/simplejson module not importable.")
     
     #Confirm, for safety's sake
     if not args.runSilent:
@@ -37,15 +49,13 @@ if __name__ == "__main__":
     
     #Fetch a file and make sure the server didn't mess up
     def getFile(url, logName):
-        file = urlopen(url)
-        status = file.getcode()
-        
-        #Did the server mess up?
-        if not status is 200:
-            log("Error fetching %s, server returned status code %s" % (logName, status))
+        file = None
+        try:
+            file = urlopen(url)
+        except HTTPError, e:
+            log("Error fetching %s, server returned status code %s" % (logName, e.code))
             os.sys.exit()
         
-        #It didn't, return the file.
         contents = file.read()
         file.close()
         return contents
@@ -104,7 +114,7 @@ if __name__ == "__main__":
                 file.write(bbFile)
                 file.flush()
                 file.close()
-        except IOError as e:
+        except IOError, e:
             log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
             log("Exiting.")
             os.sys.exit()
@@ -117,7 +127,7 @@ if __name__ == "__main__":
             with open(".dotfileshash", "w") as hashFile:
                 hashFile.write(revisionHash)
                 hashFile.flush()
-        except IOError as e:
+        except IOError, e:
             log("Unable to save revision hash. (%s)" % e)
     
     log("Successfully updated all files to revision %s." % revisionHash)
