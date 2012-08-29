@@ -41,6 +41,8 @@ YELLOW_COLOR='\[$(tput setaf 3)\]'
 
 export PS1="$SETTITLE$GREEN_COLOR\u$NORMAL_COLOR@$BLUE_COLOR\h$NORMAL_COLOR:$YELLOW_COLOR\W$NORMAL_COLOR \$"
 
+unset NORMAL_COLOR GREEN_COLOR BLUE_COLOR YELLOW_COLOR
+
 #add ~/bin to path
 export PATH=$PATH:~/bin
 
@@ -55,13 +57,14 @@ alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
 
-#Makes man not prompt for section (stupid openSUSE behaviour)
+#Stupid openSUSE behavior fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
+alias sudo='env PATH=$PATH:/usr/sbin:/sbin sudo -E'
 
 #Colors are fun! wheee!!
 alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
+alias fgrep='grep -F --color=auto'
+alias egrep='grep -E --color=auto'
 
 #Display $SHLVL on exit
-trap 'echo SHLVL is now $(expr $SHLVL - 1); exit' 0
+trap 'echo -e "Goodbye.\nSHLVL is now $(expr $SHLVL - 1)"; exit' 0
