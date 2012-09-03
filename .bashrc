@@ -56,7 +56,8 @@ alias psa='ps -Ao user,pid,time,cmd'
 alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
-alias duh='du -ah'
+alias du='du -h'
+alias df='df -h'
 
 #Stupid openSUSE behavior fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
