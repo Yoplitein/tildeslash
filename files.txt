@@ -3,5 +3,6 @@
 .bash_logout
 .vimrc
 bin/afk
+bin/uptime
 --FOLDERS--
 bin

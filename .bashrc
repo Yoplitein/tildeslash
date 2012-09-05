@@ -63,7 +63,7 @@ alias du='du -h'
 alias df='df -h'
 
 #So I can screen -x after su'ing
-function su() { chmod o+rw $SSH_TTY; su $@; chmod o-rw $SSH_TTY}
+function su() { chmod o+rw $SSH_TTY; $(which su) $@; chmod o-rw $SSH_TTY; }
 
 #Stupid openSUSE behavior fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
@@ -77,3 +77,10 @@ alias egrep='grep -E --color=auto'
 #Display $SHLVL on exit
 #(I have a bad habit of opening shells in vim and then opening vim in those shells, and so on)
 trap 'echo -e "Goodbye.\nSHLVL is now $(expr $SHLVL - 1)"; exit' 0
+
+#Display some neat info on login
+if [ "$SHLVL" == "1" ]; then
+    echo Welcome to $(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
+    echo System uptime: $(tput setaf 3)$(python ~/bin/uptime)$(tput sgr0)
+    echo Current users: $(tput setaf 2)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
+fi
