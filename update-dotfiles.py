@@ -3,7 +3,9 @@
 from __future__ import with_statement
 from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
-import os, syslog
+import os, syslog, time
+
+VERSION = "1.1"
 
 if __name__ == "__main__":
     #Get options
@@ -14,8 +16,16 @@ if __name__ == "__main__":
                 help="directory to save files to, default ~/", default=os.getenv("HOME"))
     parser.add_argument("-C", "--no-check-hash", dest="logHash",
                 help="don't check for revision hash in .dotfileshash", action="store_false", default=True)
+    parser.add_argument("-v", "--version", dest="checkVersion",
+                help="check update-dotfiles version", action="store_true", default=False)
     
     args = parser.parse_args()
+    
+    if(args.checkVersion):
+        print "update-dotfiles version %s" % VERSION
+        fileMTime = time.ctime(os.path.getmtime(__file__))
+        print "Script last updated on %s" % fileMTime
+        os.sys.exit(0)
     
     #By default, we log with print
     def fauxPrint(message):
