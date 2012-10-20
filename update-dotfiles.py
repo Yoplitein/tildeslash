@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--version", dest="checkVersion",
                 help="check update-dotfiles version", action="store_true", default=False)
     parser.add_argument("-n", "--no-update", dest="noUpdate",
-                help="Don't attempt to update self", action="store_true", default=False)
+                help="Don't attempt to update self", action="store_false", default=True)
     
     args = parser.parse_args()
     
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     
     if os.geteuid() == 0 and args.noUpdate: #Are we running as root?
         #Get the version number from the repo's version
-        repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py")
+        repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
         scope = {}
         exec repoUpdateDotfiles in scope
         
@@ -94,7 +94,7 @@ if __name__ == "__main__":
             file.close()
             
             log("Updated! Re-running script.")
-            subprocess.call(sys.argv + ["-n"])
+            subprocess.call(os.sys.argv + ["-n"])
             os.sys.exit(0)
     
     #Change to the specified directory
