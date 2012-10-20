@@ -5,7 +5,7 @@ from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess
 
-VERSION = "1.2"
+VERSION = "1.3"
 
 if __name__ == "__main__":
     #Get options
@@ -95,6 +95,7 @@ if __name__ == "__main__":
             
             log("Updated! Re-running script.")
             subprocess.call(sys.argv + ["-n"])
+            os.sys.exit(0)
     
     #Change to the specified directory
     os.chdir(args.directory)
