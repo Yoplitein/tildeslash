@@ -5,7 +5,8 @@ from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess
 
-VERSION = "1.3"
+VERSION = "1.4"
+REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
     #Get options
@@ -74,9 +75,9 @@ if __name__ == "__main__":
     
     #Get the revision hash to calculate the base URL
     revisionHash = json.loads(\
-        getFile("http://api.bitbucket.org/1.0/repositories/Yoplitein/tildeslash/changesets", "changesets"))\
+        getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets", "changesets"))\
         ["changesets"][-1]["node"]
-    baseURL = "https://bitbucket.org/Yoplitein/tildeslash/raw/" + revisionHash + "/"
+    baseURL = "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
     
     if os.geteuid() == 0 and args.noUpdate: #Are we running as root?
         #Get the version number from the repo's version
