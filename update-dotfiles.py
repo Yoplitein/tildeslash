@@ -3,9 +3,9 @@
 from __future__ import with_statement
 from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
-import os, syslog, time
+import os, syslog, time, subprocess
 
-VERSION = "1.1"
+VERSION = "1.2"
 
 if __name__ == "__main__":
     #Get options
@@ -18,6 +18,8 @@ if __name__ == "__main__":
                 help="don't check for revision hash in .dotfileshash", action="store_false", default=True)
     parser.add_argument("-v", "--version", dest="checkVersion",
                 help="check update-dotfiles version", action="store_true", default=False)
+    parser.add_argument("-n", "--no-update", dest="noUpdate",
+                help="Don't attempt to update self", action="store_true", default=False)
     
     args = parser.parse_args()
     
@@ -62,7 +64,7 @@ if __name__ == "__main__":
         file = None
         try:
             file = urlopen(url)
-        except HTTPError, e:
+        except (HTTPError, urllib2.URLError), e:
             log("Error fetching %s, server returned status code %s" % (logName, e.code))
             os.sys.exit()
         
@@ -75,6 +77,24 @@ if __name__ == "__main__":
         getFile("http://api.bitbucket.org/1.0/repositories/Yoplitein/tildeslash/changesets", "changesets"))\
         ["changesets"][-1]["node"]
     baseURL = "https://bitbucket.org/Yoplitein/tildeslash/raw/" + revisionHash + "/"
+    
+    if os.geteuid() == 0 and args.noUpdate: #Are we running as root?
+        #Get the version number from the repo's version
+        repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py")
+        scope = {}
+        exec repoUpdateDotfiles in scope
+        
+        if scope["VERSION"] != VERSION: #We're out of date! D:
+            log("Attempting to update self..")
+            
+            fullFileName = os.path.abspath(__file__)
+            file = open(fullFileName, "w")
+            file.truncate()
+            file.write(repoUpdateDotfiles)
+            file.close()
+            
+            log("Updated! Re-running script.")
+            subprocess.call(sys.argv + ["-n"])
     
     #Change to the specified directory
     os.chdir(args.directory)
