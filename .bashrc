@@ -82,6 +82,7 @@ trap 'echo -e "Goodbye.\nSHLVL is now $(expr $SHLVL - 1)"; exit' 0
 if [ "$LOGIN_INFO_SHOWN" == "" ]; then
     echo Welcome to $(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
     echo System uptime: $(tput setaf 1)$(python ~/bin/uptime)$(tput sgr0)
-    echo Current users: $(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
+    echo Users connected: $(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
+    echo Language and encoding: $(tput setaf 6)$LANG$(tput sgr0)
     LOGIN_INFO_SHOWN=1
 fi
