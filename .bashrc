@@ -78,6 +78,11 @@ alias egrep='grep -E --color=auto'
 #(I have a bad habit of opening shells in vim and then opening vim in those shells, and so on)
 trap 'echo -e "Goodbye.\nSHLVL is now $(expr $SHLVL - 1)"; exit' 0
 
+#Execute site-specific configurations
+if [ -e ~/.bashrc-site ]; then
+    source ~/.bashrc-site
+fi
+
 #Display some neat info on login
 if [ "$LOGIN_INFO_SHOWN" == "" ]; then
     echo Welcome to $(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
