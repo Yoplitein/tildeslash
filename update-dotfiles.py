@@ -5,7 +5,7 @@ from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess
 
-VERSION = "1.4"
+VERSION = "1.5"
 REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         print "update-dotfiles version %s" % VERSION
         fileMTime = time.ctime(os.path.getmtime(__file__))
         print "Script last updated on %s" % fileMTime
-        os.sys.exit(0)
+        os.sys.exit()
     
     #By default, we log with print
     def fauxPrint(message):
@@ -51,7 +51,8 @@ if __name__ == "__main__":
         try:
             import simplejson as json
         except ImportError:
-            log("json/simplejson module not importable.")
+            log("Fatal: json/simplejson module not importable. Exiting.")
+            os.sys.exit(1)
     
     #Confirm, for safety's sake
     if not args.runSilent:
@@ -67,7 +68,7 @@ if __name__ == "__main__":
             file = urlopen(url)
         except (HTTPError, urllib2.URLError), e:
             log("Error fetching %s, server returned status code %s" % (logName, e.code))
-            os.sys.exit()
+            os.sys.exit(1)
         
         contents = file.read()
         file.close()
@@ -96,7 +97,7 @@ if __name__ == "__main__":
             
             log("Updated! Re-running script.")
             subprocess.call(os.sys.argv + ["-n"])
-            os.sys.exit(0)
+            os.sys.exit()
     
     #Change to the specified directory
     os.chdir(args.directory)
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         except IOError, e:
             log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
             log("Exiting.")
-            os.sys.exit()
+            os.sys.exit(1)
         if not args.runSilent:
             log("Wrote %s to disk." % fileName)
     
