@@ -29,6 +29,24 @@ case $TERM in
         ;;
 esac
 
+#Display the running command in the title
+#solution courtesy of Gilles from superuser.com
+preexec() { :; }
+
+preexec_invoke()
+{
+    #if returning from the command, do nothing
+    [ -n "$COMP_LINE" ] && return
+    
+    local this_command=`history 1 | sed -e "s/^[ ]*[0-9]*[ ]*//g"`;
+    
+    echo -ne "\033]0;${USER}@${HOST}:${PWD##*/} \$$this_command\007"
+    
+    preexec "$this_command"
+}
+
+trap "preexec_invoke" DEBUG
+
 #I love the fuck out of colors. Seriously.
 NORMAL_COLOR='\[$(tput sgr0)\]'
 RED_COLOR='\[$(tput setaf 1)\]'
@@ -39,7 +57,7 @@ PURPLE_COLOR='\[$(tput setaf 5)\]'
 CYAN_COLOR='\[$(tput setaf 6)\]'
 BOLD_COLOR='\[$(tput bold)\]'
 
-export PS1="$SETTITLE$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $CYAN_COLOR\$$NORMAL_COLOR"
+export PS1="$SETTITLE$YELLOW_COLOR[\D{%H:%M:%S}]$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $CYAN_COLOR\$$NORMAL_COLOR"
 
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
 
