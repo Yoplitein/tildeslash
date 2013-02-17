@@ -2,6 +2,7 @@
 .bash_profile
 .bash_logout
 .vimrc
+.screenrc
 bin/afk
 bin/uptime
 --FOLDERS--

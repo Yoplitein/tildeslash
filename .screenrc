@@ -1,0 +1,39 @@
+#Yoplitein's simple .screenrc
+
+#use altscreens, allows pagers to restore screen buffer etc.
+altscreen on
+
+#disable the annoying startup message
+startup_message off
+
+#because the default is too short
+defscrollback 1000
+
+#marvelous menu bar, courtesy of gyaresu at serverfault.com
+hardstatus alwayslastline
+hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'
+
+#binds (for PuTTY)
+#previous window (Ctrl+Alt+Right)
+bindkey ^[^[[D prev
+
+#next window (Ctrl+Alt+Left)
+bindkey ^[^[[C next
+
+#reduce region size one line (Ctrl+Alt+Up)
+bindkey ^[^[[A resize -1
+
+#increase region size one line (Ctrl+Alt+Down)
+bindkey ^[^[[B resize +1
+
+#previous region (Ctrl+Left)
+bindkey ^[[C focus up
+
+#next region (Ctrl+Right)
+bindkey ^[[D focus down
+
+#split (Ctrl+Down)
+bindkey ^[[B split
+
+#equalize region sizes (Ctrl+Up)
+bindkey ^[[A resize =
