@@ -67,6 +67,10 @@ export PATH=$PATH:~/bin
 #disable history expansion (so ! doesn't have to be escaped)
 set +H
 
+#disable XON/XOFF
+#(out of habit, I ctrl+s in vim a lot)
+stty -ixon
+
 #Aliases and broken/stupid functionality fixes
 #General aliases
 alias ls='ls -A1 --color=auto'
