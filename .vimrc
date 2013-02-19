@@ -10,11 +10,19 @@ set ruler
 set hlsearch
 set nu
 
+"fix for function key weirdness under screen
+if match($TERM, "screen")!=-1
+    set term=xterm
+endif
+
 "enables pressing F1 to remove search highlights
 nnoremap <F1> :noh<return><esc>
 
 "sets F2 to toggle pasting mode
 set pastetoggle=<F2>
+
+"sets F3 to toggle line numbers
+nnoremap <F3> :set nonumber!<CR>
 
 "Enable automatic indentation
 if has("autocmd")
