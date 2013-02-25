@@ -105,6 +105,9 @@ if [ -e ~/.bashrc-site ]; then
     source ~/.bashrc-site
 fi
 
+#You never know when you might want to quickly browse the current directory through a browswer, or something
+function httpserv() { python -m SimpleHTTPServ ${1-"8000"} }
+
 #Display some neat info on login
 if [ "$LOGIN_INFO_SHOWN" == "" ]; then
     echo Welcome to $(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
