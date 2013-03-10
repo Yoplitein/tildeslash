@@ -10,7 +10,8 @@ REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
     #Get options
-    parser = ArgumentParser(usage="update-dotfiles")
+    parser = ArgumentParser(description="Updates your dotfiles with copies from a central repository.",
+                            usage="update-dotfiles")
     parser.add_argument("-c", "--cron", dest="runSilent",
                 help="run in cronjob (silent) mode", action="store_true", default=False)
     parser.add_argument("-d", "--dir", dest="directory",

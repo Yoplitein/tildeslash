@@ -3,7 +3,9 @@
 .bash_logout
 .vimrc
 .screenrc
+.screenrc-container
 bin/afk
 bin/uptime
+bin/qotd
 --FOLDERS--
 bin
