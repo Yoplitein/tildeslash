@@ -77,6 +77,20 @@ unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE
 #add ~/bin to path
 export PATH=$PATH:~/bin
 
+#set default editor
+editor=$EDITOR
+
+if [ -e $(which vim) ]; then
+    editor=vim
+elif [ -e $(which vi) ]; then #some systems have vi but not vim
+    editor=vi
+elif [ -e $(which nano) ]; then #if there's no vi/m then nano is a nice editor too
+    editor=nano
+fi
+
+export EDITOR=$editor
+unset editor
+
 #disable history expansion (so ! doesn't have to be escaped)
 set +H
 
@@ -93,6 +107,7 @@ alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
 alias screen='screen -A'
 alias screens='screen -ls'
+alias errlvl='echo $?'
 
 #I should have to pass arguments to specify non-human-readable, ffs
 alias du='du -h'
@@ -120,6 +135,12 @@ fi
 #functions
 #you never know when you might want to quickly browse the current directory through a browser, or something
 function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
+
+#prints all active connections (functionize'd for exportability to root shells)
+function lsinet() { netstat -nepaA inet; }
+
+#exports
+export -f httpserv lsinet
 
 #this nests screen sessions to save layout across detatches
 function nestscreen()
