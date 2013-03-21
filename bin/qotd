@@ -4,5 +4,5 @@ import urllib2, os
 try:
     x = urllib2.urlopen("http://labs.beniesbuilds.com/python-tests/general/qotd/qotd.py?format=raw", timeout=5)
     print x.read()
-except (urllib2.HTTPError, urllib2.URLError) as e:
+except (urllib2.HTTPError, urllib2.URLError, urllib2.socket.timeout) as e:
     print "Unable to fetch QOTD. (%s)" % str(e)

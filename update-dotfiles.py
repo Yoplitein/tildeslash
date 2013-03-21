@@ -3,9 +3,9 @@
 from __future__ import with_statement
 from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
-import os, syslog, time, subprocess
+import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.5"
+VERSION = "1.6"
 REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
@@ -20,7 +20,7 @@ if __name__ == "__main__":
                 help="don't check for revision hash in .dotfileshash", action="store_false", default=True)
     parser.add_argument("-v", "--version", dest="checkVersion",
                 help="check update-dotfiles version", action="store_true", default=False)
-    parser.add_argument("-n", "--no-update", dest="noUpdate",
+    parser.add_argument("-n", "--no-update", dest="doUpdate",
                 help="Don't attempt to update self", action="store_false", default=True)
     
     args = parser.parse_args()
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         ["changesets"][-1]["node"]
     baseURL = "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
     
-    if os.geteuid() == 0 and args.noUpdate: #Are we running as root?
+    if os.geteuid() == 0 and args.doUpdate: #Are we running as root?
         #Get the version number from the repo's version
         repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
         scope = {}
@@ -152,8 +152,15 @@ if __name__ == "__main__":
             log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
             log("Exiting.")
             os.sys.exit(1)
+        
         if not args.runSilent:
             log("Wrote %s to disk." % fileName)
+    
+    #make files in bin/ executable
+    if os.path.exists("bin"):
+        for file in glob.glob("bin/*"):
+            mode = os.stat(file)
+            os.chmod(file, mode.st_mode | stat.S_IEXEC)
     
     #Write hash to .dotfileshash
     if args.logHash:
