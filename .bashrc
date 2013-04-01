@@ -45,7 +45,7 @@ function preexec_invoke()
     
     [ "$curdir" == "$HOME" ] && curdir="~"
     
-    echo -ne $(build_title_string "${USER}@${HOST}:${curdir##*/} \$$this_command")
+    echo -ne $(build_title_string "${USER}@$(hostname -s):${curdir##*/} \$$this_command")
     preexec "$this_command"
 }
 trap "preexec_invoke" DEBUG
