@@ -5,7 +5,7 @@ from urllib2 import urlopen, HTTPError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.7"
+VERSION = "1.8"
 REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
@@ -22,6 +22,8 @@ if __name__ == "__main__":
                 help="check update-dotfiles version", action="store_true", default=False)
     parser.add_argument("-n", "--no-update", dest="doUpdate",
                 help="Don't attempt to update self", action="store_false", default=True)
+    parser.add_argument("-f", "--force-update", dest="forceUpdate", action="store_true", default=False,
+                help="Attempt to force update self")
     
     args = parser.parse_args()
     
@@ -80,7 +82,7 @@ if __name__ == "__main__":
         getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
     baseURL = "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
     
-    if os.geteuid() == 0 and args.doUpdate: #Are we running as root?
+    if (os.geteuid() == 0 and args.doUpdate) or args.forceUpdate: #only update if running as root or if forced
         #Get the version number from the repo's version
         repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
         scope = {}

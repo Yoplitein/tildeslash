@@ -1,13 +1,39 @@
 #!/usr/bin/env python
-import urllib2
+import urllib2, sys
 
-try:
-    x = urllib2.urlopen("http://labs.beniesbuilds.com/python/qotd/qotd.py?format=raw", timeout=5)
-    print x.read()
-except (urllib2.HTTPError, urllib2.URLError, urllib2.socket.timeout) as e:
-    reason = str(e)
+def main(url):
+    try:
+        x = urllib2.urlopen(url, timeout=5)
+        print x.read().replace("\n", "")
+    except (urllib2.HTTPError, urllib2.URLError, urllib2.socket.timeout) as e:
+        reason = str(e)
+        
+        if hasattr(e, "read") and "text/plain" in e.headers["Content-Type"]: #script sent error message
+            reason = e.read().replace("\n", "")
+        
+        print "Unable to fetch QOTD. (%s)" % reason
+
+if __name__ == "__main__":
+    url = "http://labs.beniesbuilds.com/python/qotd/qotd.py?format=raw"
     
-    if hasattr(e, "read"): #script reachable, read its error message
-        reason = e.read().replace("\n", "")
+    if len(sys.argv) == 2:
+        arg = sys.argv[1]
+        
+        if arg in ["-l", "--latest"]:
+            url += "&action=latest"
+        elif arg in ["-r", "--random"]:
+            url += "&action=random"
+        elif arg in ["-h", "--help"]:
+            print "qotd [--latest|--random|id]"
+            print "  Shows a quote from qotd.py"
+            print
+            print "  --latest - show the latest quote"
+            print "  --random - show a random quote"
+        else:
+            try:
+                url += "&id=%d" % int(arg)
+            except ValueError:
+                print "%r is not a number!" % arg
+                sys.exit(1)
     
-    print "Unable to fetch QOTD. (%s)" % reason
+    main(url)
