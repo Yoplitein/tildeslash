@@ -4,6 +4,7 @@
 .vimrc
 .screenrc
 .screenrc-container
+.muttrc
 bin/afk
 bin/uptime
 bin/qotd
