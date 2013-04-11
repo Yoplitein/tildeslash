@@ -1,0 +1,6 @@
+#no, mutt, I don't want ~/Mail
+set folder=""
+set move=no
+
+#show me dem headers
+set edit_headers=yes
