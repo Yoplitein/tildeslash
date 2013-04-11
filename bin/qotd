@@ -29,6 +29,7 @@ if __name__ == "__main__":
             print
             print "  --latest - show the latest quote"
             print "  --random - show a random quote"
+            sys.exit()
         else:
             try:
                 url += "&id=%d" % int(arg)
