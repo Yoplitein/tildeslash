@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #This fetches the latest files from the repo and puts them in the given folder
 from __future__ import with_statement
-from urllib2 import urlopen, HTTPError
+from urllib2 import urlopen, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.8"
+VERSION = "1.9"
 REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         file = None
         try:
             file = urlopen(url)
-        except (HTTPError, urllib2.URLError), e:
+        except (HTTPError, URLError), e:
             log("Error fetching %s, server returned status code %s" % (logName, e.code))
             os.sys.exit(1)
         
