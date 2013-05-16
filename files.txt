@@ -2,9 +2,10 @@
 .bash_profile
 .bash_logout
 .vimrc
-.screenrc
-.screenrc-container
+_stale.screenrc
+_stale.screenrc-container
 .muttrc
+.tmux.conf
 bin/afk
 bin/uptime
 bin/qotd

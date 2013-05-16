@@ -139,6 +139,19 @@ if __name__ == "__main__":
         if not os.path.exists(folder):
             os.mkdir(folder)
     
+    #Remove stale files
+    for fileName in fileNames[:]:
+        if fileName.startswith("_stale"):
+            try:
+                realFileName = fileName.split("_stale")[1]
+                
+                os.remove(realFileName)
+                log("Removing stale file %s" % realFileName)
+            except IOError:
+                pass
+            finally:
+                fileNames.remove(fileName)
+    
     #Write the files
     for fileName in fileNames:
         #we're evaluating this here so we don't exit with open file handlers if there's an error

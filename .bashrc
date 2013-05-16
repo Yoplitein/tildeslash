@@ -25,8 +25,8 @@ function build_title_string()
     local titleStr
     
     case $TERM in
-        xterm*) titleStr="\033]0;$@\007";;
-        screen*) titleStr="\033k\033$@\033\\";;
+        xterm*|screen*) titleStr="\033]0;$@\007";;
+        #screen*) titleStr="\033k\033$@\033\\";;
     esac
     
     echo -n $titleStr
@@ -54,8 +54,8 @@ trap "preexec_invoke" DEBUG
 SETTITLE="\[$(build_title_string "\\u@\\h:\\w")"
 
 case $TERM in
-    xterm*) SETTITLE+="\]";;
-    screen*) SETTITLE+="\\\\]";; #\\\\\\\\ = \\?!
+    xterm*|screen*) SETTITLE+="\]";;
+    #screen*) SETTITLE+="\\\\]";; #\\\\\\\\ = \\?!
 esac
 
 #I love the fuck out of colors. Seriously.
@@ -105,8 +105,8 @@ alias psa='ps -Ao %cpu:4,%mem:4,start:5,user:15,pid:5,cmd'
 alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
-alias screen='screen -A'
-alias screens='screen -ls'
+#alias screen='screen -A'
+alias screens='tmux ls'
 alias errlvl='echo $?'
 
 #I should have to pass arguments to specify non-human-readable, ffs
@@ -143,14 +143,14 @@ function lsinet() { netstat -nepaA inet; }
 export -f httpserv lsinet
 
 #this nests screen sessions to save layout across detatches
-function nestscreen()
-{
-    local name=${@-"nested"}
-    local innerName="inner"${name}
-    
-    screen -dmS "$innerName"
-    screen -S "$name" -c ~/.screenrc-container screen -x "$innerName"
-}
+# function nestscreen()
+# {
+#     local name=${@-"nested"}
+#     local innerName="inner"${name}
+#     
+#     screen -dmS "$innerName"
+#     screen -S "$name" -c ~/.screenrc-container screen -x "$innerName"
+# }
 
 #login/logout info
 #display some neat info on login
@@ -167,6 +167,10 @@ fi
 #display an interesting logout message
 function handle_logout()
 {
+    if [ "$SHLVL" != "1" ]; then
+        return
+    fi
+    
     local message=${@-"Goodbye"}
     
     echo -ne "\n    "

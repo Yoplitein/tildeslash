@@ -1,4 +1,0 @@
-#Alternate screenrc for container screens
-
-escape ""
-bindkey -t ^ad detach
