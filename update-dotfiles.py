@@ -5,7 +5,7 @@ from urllib2 import urlopen, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.9"
+VERSION = "1.10"
 REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
