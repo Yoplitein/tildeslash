@@ -69,7 +69,7 @@ if __name__ == "__main__":
         file = None
         try:
             file = urlopen(url)
-        except (HTTPError, URLError), e:
+        except (HTTPError, URLError) as e:
             log("Error fetching %s, server returned status code %s" % (logName, e.code))
             os.sys.exit(1)
         
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 
                 os.remove(realFileName)
                 log("Removing stale file %s" % realFileName)
-            except IOError:
+            except:
                 pass
             finally:
                 fileNames.remove(fileName)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
                 file.write(bbFile)
                 file.flush()
                 file.close()
-        except IOError, e:
+        except IOError as e:
             log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
             log("Exiting.")
             os.sys.exit(1)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             with open(".dotfileshash", "w") as hashFile:
                 hashFile.write(revisionHash)
                 hashFile.flush()
-        except IOError, e:
+        except IOError as e:
             log("Unable to save revision hash. (%s)" % e)
     
     log("Successfully updated all files to revision %s." % revisionHash)

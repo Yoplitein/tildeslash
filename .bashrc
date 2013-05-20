@@ -80,11 +80,11 @@ export PATH=$PATH:~/bin
 #set default editor
 editor=$EDITOR
 
-if [ -e $(which vim) ]; then
+if [ -e $(which vim 2>/dev/null) ]; then
     editor=vim
-elif [ -e $(which vi) ]; then #some systems have vi but not vim
+elif [ -e $(which vi 2>/dev/null) ]; then #some systems have vi but not vim
     editor=vi
-elif [ -e $(which nano) ]; then #if there's no vi/m then nano is a nice editor too
+elif [ -e $(which nano 2>/dev/null) ]; then #if there's no vi/m then nano is a nice editor too
     editor=nano
 fi
 
