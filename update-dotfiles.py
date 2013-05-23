@@ -5,7 +5,7 @@ from urllib2 import urlopen, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.10"
+VERSION = "1.11"
 REPO_NAME = "Yoplitein/tildeslash"
 
 if __name__ == "__main__":
@@ -70,7 +70,12 @@ if __name__ == "__main__":
         try:
             file = urlopen(url)
         except (HTTPError, URLError) as e:
-            log("Error fetching %s, server returned status code %s" % (logName, e.code))
+            if type(e) is URLError:
+                message = e.reason.strerror.lower()
+            else:
+                message = "server returned: %s" % str(e)
+                
+            log("Error fetching %s, %s" % (logName, message))
             os.sys.exit(1)
         
         contents = file.read()
