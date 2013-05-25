@@ -75,16 +75,16 @@ unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE
 
 #misc
 #add ~/bin to path
-export PATH=$PATH:~/bin
+export PATH=~/bin:$PATH
 
 #set default editor
 editor=$EDITOR
 
-if [ -e $(which vim 2>/dev/null) ]; then
+if [ -e "$(which vim 2>/dev/null)" ]; then
     editor=vim
-elif [ -e $(which vi 2>/dev/null) ]; then #some systems have vi but not vim
+elif [ -e "$(which vi 2>/dev/null)" ]; then #some systems have vi but not vim
     editor=vi
-elif [ -e $(which nano 2>/dev/null) ]; then #if there's no vi/m then nano is a nice editor too
+elif [ -e "$(which nano 2>/dev/null)" ]; then #if there's no vi/m then nano is a nice editor too
     editor=nano
 fi
 
