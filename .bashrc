@@ -59,16 +59,16 @@ case $TERM in
 esac
 
 #I love the fuck out of colors. Seriously.
-NORMAL_COLOR='\[$(tput sgr0)\]'
-RED_COLOR='\[$(tput setaf 1)\]'
-GREEN_COLOR='\[$(tput setaf 2)\]'
-YELLOW_COLOR='\[$(tput setaf 3)\]'
-BLUE_COLOR='\[$(tput setaf 4)\]'
-PURPLE_COLOR='\[$(tput setaf 5)\]'
-CYAN_COLOR='\[$(tput setaf 6)\]'
-BOLD_COLOR='\[$(tput bold)\]'
+NORMAL_COLOR="\[$(tput sgr0)\]"
+RED_COLOR="\[$(tput setaf 1)\]"
+GREEN_COLOR="\[$(tput setaf 2)\]"
+YELLOW_COLOR="\[$(tput setaf 3)\]"
+BLUE_COLOR="\[$(tput setaf 4)\]"
+PURPLE_COLOR="\[$(tput setaf 5)\]"
+CYAN_COLOR="\[$(tput setaf 6)\]"
+BOLD_COLOR="\[$(tput bold)\]"
 
-export PS1="$SETTITLE$YELLOW_COLOR[\D{%H:%M:%S}]$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $CYAN_COLOR\$$NORMAL_COLOR"
+export PS1="$SETTITLE$YELLOW_COLOR[\D{%H:%M:%S}]$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $RED_COLOR\$(err=\$?; if [ \$err -ne 0 ]; then echo \"\$err \"; fi)$CYAN_COLOR\$$NORMAL_COLOR"
 
 #clean up a bit
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
@@ -101,7 +101,8 @@ stty -ixon
 #general aliases
 alias ls='ls -A1 --color=auto'
 alias lsl='ls -A1l --color=auto'
-alias psa='ps -Ao %cpu:4,%mem:4,start:5,user:15,pid:5,cmd'
+alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
+alias psa='ps -A'
 alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
@@ -114,7 +115,13 @@ alias du='du -h'
 alias df='df -h'
 
 #so I can screen -x after su'ing
-function su() { chmod o+rw $SSH_TTY; $(which su) $@; chmod o-rw $SSH_TTY; }
+#function su() { chmod o+rw $SSH_TTY; $(which su) $@; chmod o-rw $SSH_TTY; }
+
+#finds processes owned by specified user (default self)
+function psu() { ps -u ${1-$USER}; }
+
+#searches process list, including column names
+function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
 
 #stupid openSUSE behavior fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
@@ -167,11 +174,20 @@ fi
 #display an interesting logout message
 function handle_logout()
 {
-    if [ "$SHLVL" != "1" ]; then
-        return
+    local message=${@-"Goodbye"}
+    
+    if [ $SHLVL -ne 1 ]; then
+        if [ "$message" == "Goodbye" ]; then 
+            return
+        fi
     fi
     
-    local message=${@-"Goodbye"}
+    if [ ! -e "$(which shuf 2>/dev/null)" ]; then
+        function shuf()
+        {
+            echo -e "1\n2\n3\n4\n5\n6"
+        }
+    fi
     
     echo -ne "\n    "
     

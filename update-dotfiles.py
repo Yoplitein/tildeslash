@@ -5,13 +5,97 @@ from urllib2 import urlopen, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.11"
+VERSION = "1.12"
 REPO_NAME = "Yoplitein/tildeslash"
 
-if __name__ == "__main__":
+#globals
+args = log = json = baseURL = revisionHash = None
+
+def getFile(url, logName):
+    file = None
+    try:
+        file = urlopen(url)
+    except (HTTPError, URLError) as e:
+        if type(e) is URLError:
+            message = e.reason.strerror.lower()
+        else:
+            message = "server returned: %s" % str(e)
+            
+        log("Error fetching %s, %s" % (logName, message))
+        raise SystemExit, 1
+    
+    contents = file.read()
+    file.close()
+    return contents
+
+def getBaseURL():
+    global revisionHash
+    
+    revisionHash = json.loads(\
+        getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
+    
+    return "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
+
+def tryUpdateSelf():
+    repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
+    scope = {}
+    
+    try:
+        exec repoUpdateDotfiles in scope
+    
+        if scope["VERSION"] != VERSION: #We're out of date! D:
+            log("Attempting to update self..")
+            
+            fullFileName = os.path.abspath(__file__)
+            file = open(fullFileName, "w")
+            
+            file.truncate()
+            file.write(repoUpdateDotfiles)
+            file.close()
+            
+            log("Updated! Re-running script.")
+            subprocess.call(os.sys.argv + ["-n"])
+            
+            raise SystemExit
+    except (KeyError, Exception) as e:
+        if type(e) is KeyError:
+            msg = "Remote update-dotfiles does not have a version, will not update"
+        elif type(e) is SystemExit:
+            raise
+        else:
+            msg = "Remote update-dotfiles threw exception, will not update."
+        
+        log(msg)
+        
+        raise SystemExit, 1
+
+def parseFileList(fileList):
+    fileFolderList = fileList.split("--FOLDERS--")
+    fileNames = fileFolderList[0].split("\n")
+    folderNames = fileFolderList[1].split("\n")
+    
+    #Remove empty strings from file and folder list
+    try:
+        while True:
+            fileNames.remove('')
+    except ValueError:
+        pass
+    
+    try:
+        while True:
+            folderNames.remove('')
+    except ValueError:
+        pass
+    
+    return fileNames, folderNames
+
+def main():
+    global args, log, json, baseURL
+    
     #Get options
     parser = ArgumentParser(description="Updates your dotfiles with copies from a central repository.",
                             usage="update-dotfiles")
+    
     parser.add_argument("-c", "--cron", dest="runSilent",
                 help="run in cronjob (silent) mode", action="store_true", default=False)
     parser.add_argument("-d", "--dir", dest="directory",
@@ -29,82 +113,56 @@ if __name__ == "__main__":
     
     if(args.checkVersion):
         print "update-dotfiles version %s" % VERSION
+        
         fileMTime = time.ctime(os.path.getmtime(__file__))
+        
         print "Script last updated on %s" % fileMTime
-        os.sys.exit()
+        
+        raise SystemExit
     
-    #By default, we log with print
-    def fauxPrint(message):
+    #Log to stdout by default
+    def stdoutLog(message):
         os.sys.stdout.write(message + "\n")
         os.sys.stdout.flush()
     
-    log = fauxPrint
-    
-    #Wrapper for syslog to prepend dir information
+    #Log to syslog if running silently
     def silentLog(msg):
-        syslog.syslog("[dir %s] %s" % (os.path.basename(os.getcwd()), msg))
-    
-    #Use syslog if we're running in cron mode
+        syslog.syslog("[%s:%s] %s" % (os.environ("USER"), os.path.basename(os.getcwd()), msg))
+        
     if args.runSilent:
         log = silentLog
+    else:
+        log = stdoutLog
     
     try:
-        import json
+        import json as _json
     except ImportError:
         try:
-            import simplejson as json
+            import simplejson as _json
         except ImportError:
             log("Fatal: json/simplejson module not importable. Exiting.")
-            os.sys.exit(1)
+            
+            raise SystemExit, 1
+    
+    json = _json
     
     #Confirm, for safety's sake
     if not args.runSilent:
         yesNo = raw_input("Are you sure? (y/N) ")
+        
         if yesNo != "y":
             log("Aborting.")
-            os.sys.exit()
-    
-    #Fetch a file and make sure the server didn't mess up
-    def getFile(url, logName):
-        file = None
-        try:
-            file = urlopen(url)
-        except (HTTPError, URLError) as e:
-            if type(e) is URLError:
-                message = e.reason.strerror.lower()
-            else:
-                message = "server returned: %s" % str(e)
-                
-            log("Error fetching %s, %s" % (logName, message))
-            os.sys.exit(1)
-        
-        contents = file.read()
-        file.close()
-        return contents
-    
-    #Get the revision hash to calculate the base URL
-    revisionHash = json.loads(\
-        getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
-    baseURL = "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
-    
-    if (os.geteuid() == 0 and args.doUpdate) or args.forceUpdate: #only update if running as root or if forced
-        #Get the version number from the repo's version
-        repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
-        scope = {}
-        exec repoUpdateDotfiles in scope
-        
-        if scope["VERSION"] != VERSION: #We're out of date! D:
-            log("Attempting to update self..")
             
-            fullFileName = os.path.abspath(__file__)
-            file = open(fullFileName, "w")
-            file.truncate()
-            file.write(repoUpdateDotfiles)
-            file.close()
-            
-            log("Updated! Re-running script.")
-            subprocess.call(os.sys.argv + ["-n"])
-            os.sys.exit()
+            raise SystemExit, 1
+    
+    baseURL = getBaseURL()
+    
+    #attempt to update if we're root
+    #or if an update is forced
+    #or if update-dotfiles is in the executing user's home directory
+    #unless updating is turned off (--no-update)
+    if (os.geteuid() == 0 or args.forceUpdate or (os.environ["HOME"] in os.path.abspath(__file__))) and args.doUpdate:
+        tryUpdateSelf()
     
     #Change to the specified directory
     os.chdir(args.directory)
@@ -112,32 +170,20 @@ if __name__ == "__main__":
     #Check for a hash, if enabled
     if args.logHash:
         try:
-            upHash = ""
+            hash = ""
+            
             with open(".dotfileshash", "r") as f:
-                upHash = f.read()
-            if(upHash == revisionHash):
+                hash = f.read()
+            
+            if(hash == revisionHash):
                 log("All files are at latest revision, exiting")
-                os.sys.exit()
+                
+                raise SystemExit
         except IOError:
             pass
     
     #Get the file and folder lists
-    fileFolderList = getFile(baseURL + "files.txt", "file and folder list").split("--FOLDERS--")
-    fileNames = fileFolderList[0].split("\n")
-    folderNames = fileFolderList[1].split("\n")
-    
-    #Remove empty strings from file and folder list
-    try:
-        while True:
-            fileNames.remove('')
-    except ValueError:
-        pass
-    
-    try:
-        while True:
-            folderNames.remove('')
-    except ValueError:
-        pass
+    fileNames, folderNames = parseFileList(getFile(baseURL + "files.txt", "file and folder list"))
     
     #Make sure each folder exists
     for folder in folderNames:
@@ -170,7 +216,7 @@ if __name__ == "__main__":
         except IOError as e:
             log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
             log("Exiting.")
-            os.sys.exit(1)
+            raise SystemExit, 1
         
         if not args.runSilent:
             log("Wrote %s to disk." % fileName)
@@ -191,3 +237,6 @@ if __name__ == "__main__":
             log("Unable to save revision hash. (%s)" % e)
     
     log("Successfully updated all files to revision %s." % revisionHash)
+
+if __name__ == "__main__":
+    main()
