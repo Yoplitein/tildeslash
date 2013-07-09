@@ -4,22 +4,30 @@
 #if not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+##various shell options
 #don't put duplicate lines/lines beginning with a space in history
 HISTCONTROL=ignoreboth
 
 #append to the history file, don't overwrite it
 shopt -s histappend
 
-#check the window size after each command and, if necessary,
-#update the values of LINES and COLUMNS.
+#check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
 shopt -s checkwinsize
+
+#disable history expansion (so ! doesn't have to be escaped)
+#(seriously, guys, arrow keys)
+set +H
+
+#disable (fucking) XON/XOFF (Ctrl+S/Ctrl+Q)
+stty -ixon
 
 #enable programmable completion features
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-#custom titlebar stuff
+##custom prompt stuff
+#used to fix some screen buggyness, may remove this eventually
 function build_title_string()
 {
     local titleStr
@@ -34,6 +42,7 @@ function build_title_string()
 
 #display the running command in the title
 #solution courtesy of Gilles from superuser.com
+#TODO: make it work with tmux
 function preexec() { :; }
 function preexec_invoke()
 {
@@ -73,7 +82,7 @@ export PS1="$SETTITLE$YELLOW_COLOR[\D{%H:%M:%S}]$GREEN_COLOR\u$RED_COLOR@$BLUE_C
 #clean up a bit
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
 
-#misc
+##misc
 #add ~/bin to path
 export PATH=~/bin:$PATH
 
@@ -91,16 +100,10 @@ fi
 export EDITOR=$editor
 unset editor
 
-#disable history expansion (so ! doesn't have to be escaped)
-set +H
-
-#disable XON/XOFF (Ctrl+S/Ctrl+Q)
-stty -ixon
-
-#aliases and broken/stupid functionality fixes
+##aliases and broken/stupid functionality fixes
 #general aliases
-alias ls='ls -A1 --color=auto'
-alias lsl='ls -A1l --color=auto'
+alias ls='ls -AF1 --color=auto'
+alias lsl='ls -AFhl1 --color=auto'
 alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
 alias psa='ps -A'
 alias cls='clear'
@@ -134,20 +137,28 @@ alias grep='grep --color=auto'
 alias fgrep='grep -F --color=auto'
 alias egrep='grep -E --color=auto'
 
-#sxecute site-specific configurations
-if [ -e ~/.bashrc-site ]; then
-    source ~/.bashrc-site
-fi
-
-#functions
+##functions
 #you never know when you might want to quickly browse the current directory through a browser, or something
 function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
 
 #prints all active connections (functionize'd for exportability to root shells)
 function lsinet() { netstat -nepaA inet; }
 
+#blatantly stolen from the Arch wiki
+function man()
+{
+    env LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+        LESS_TERMCAP_md=$(printf "\e[1;31m") \
+        LESS_TERMCAP_me=$(printf "\e[0m") \
+        LESS_TERMCAP_se=$(printf "\e[0m") \
+        LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+        LESS_TERMCAP_ue=$(printf "\e[0m") \
+        LESS_TERMCAP_us=$(printf "\e[1;32m") \
+        man "$@"
+}
+
 #exports
-export -f httpserv lsinet
+export -f httpserv lsinet man
 
 #this nests screen sessions to save layout across detatches
 # function nestscreen()
@@ -159,7 +170,7 @@ export -f httpserv lsinet
 #     screen -S "$name" -c ~/.screenrc-container screen -x "$innerName"
 # }
 
-#login/logout info
+##login/logout info
 #display some neat info on login
 if [ "$LOGIN_INFO_SHOWN" == "" ]; then
     echo Welcome to $(tput bold)$(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
@@ -225,3 +236,8 @@ trap handle_logout EXIT
 
 # :3
 function colors() { handle_logout ${@-"Colorful"}; }
+
+#execute site-specific configurations
+if [ -e ~/.bashrc-site ]; then
+    source ~/.bashrc-site
+fi
