@@ -26,18 +26,30 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+##determine the distro we're on
+DISTRO=unknown
+
+if   [ -e /etc/SuSE-release ]; then
+    DISTRO=opensuse
+elif [ -e /etc/arch-release ]; then
+    DISTRO=arch
+elif [ -e /etc/debian_version ]; then
+    DISTRO=debian
+fi
+
+export DISTRO
+
 ##custom prompt stuff
 #used to fix some screen buggyness, may remove this eventually
 function build_title_string()
 {
-    local titleStr
+    #local titleStr
+    #
+    #case $TERM in
+    #    *) titleStr="\033]0;$@\007";;
+    #esac
     
-    case $TERM in
-        xterm*|screen*) titleStr="\033]0;$@\007";;
-        #screen*) titleStr="\033k\033$@\033\\";;
-    esac
-    
-    echo -n $titleStr
+    echo -n "\033]0;$@\007" #$titleStr
 }
 
 #display the running command in the title
@@ -63,8 +75,7 @@ trap "preexec_invoke" DEBUG
 SETTITLE="\[$(build_title_string "\\u@\\h:\\w")"
 
 case $TERM in
-    xterm*|screen*) SETTITLE+="\]";;
-    #screen*) SETTITLE+="\\\\]";; #\\\\\\\\ = \\?!
+    *) SETTITLE+="\]";;
 esac
 
 #I love the fuck out of colors. Seriously.
@@ -82,9 +93,22 @@ export PS1="$SETTITLE$YELLOW_COLOR[\D{%H:%M:%S}]$GREEN_COLOR\u$RED_COLOR@$BLUE_C
 #clean up a bit
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
 
+#add colors to less
+export LESS_TERMCAP_mb=$(tput blink; tput setaf 6)
+export LESS_TERMCAP_md=$(tput bold; tput setaf 1)
+export LESS_TERMCAP_me=$(tput sgr0)
+export LESS_TERMCAP_se=$(tput sgr0)
+export LESS_TERMCAP_so=$(tput setab 4; tput bold; tput setaf 2)
+export LESS_TERMCAP_ue=$(tput sgr0)
+export LESS_TERMCAP_us=$(tput bold; tput setaf 3)
+export GROFF_NO_SGR=yes #stupid openSUSE behaviour fix
+
 ##misc
-#add ~/bin to path
-export PATH=~/bin:$PATH
+#add ~/bin, /sbin, /usr/sbin to path
+export PATH=~/bin:$PATH:/sbin:/usr/sbin
+
+#set pager
+export PAGER=less
 
 #set default editor
 editor=$EDITOR
@@ -102,23 +126,26 @@ unset editor
 
 ##aliases and broken/stupid functionality fixes
 #general aliases
-alias ls='ls -AF1 --color=auto'
-alias lsl='ls -AFhl1 --color=auto'
+alias ls='ls -AF --color=always'
+alias lsl='ls -AFhl --color=always'
 alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
 alias psa='ps -A'
 alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
-#alias screen='screen -A'
 alias screens='tmux ls'
 alias errlvl='echo $?'
+alias cata='cat -A'
+alias lc='wc -l'
+alias less='less -R'
+
+if [ "$DISTRO" == "arch" ]; then
+    alias netstat='ss'
+fi
 
 #I should have to pass arguments to specify non-human-readable, ffs
 alias du='du -h'
 alias df='df -h'
-
-#so I can screen -x after su'ing
-#function su() { chmod o+rw $SSH_TTY; $(which su) $@; chmod o-rw $SSH_TTY; }
 
 #finds processes owned by specified user (default self)
 function psu() { ps -u ${1-$USER}; }
@@ -126,16 +153,17 @@ function psu() { ps -u ${1-$USER}; }
 #searches process list, including column names
 function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
 
-#stupid openSUSE behavior fixes
+#stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
 alias sudo='env PATH=$PATH:/usr/sbin:/sbin sudo -E'
-alias last='sudo last -10'
-alias lastb='sudo lastb -10'
+alias last='last -10'
+alias lastb='lastb -10'
 
 #colors are fun! wheee!!
-alias grep='grep --color=auto'
-alias fgrep='grep -F --color=auto'
-alias egrep='grep -E --color=auto'
+alias grep='grep --color=always'
+alias grepi='grep --color=always -i'
+alias fgrep='grep -F --color=always'
+alias egrep='grep -E --color=always'
 
 ##functions
 #you never know when you might want to quickly browse the current directory through a browser, or something
@@ -144,31 +172,8 @@ function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
 #prints all active connections (functionize'd for exportability to root shells)
 function lsinet() { netstat -nepaA inet; }
 
-#blatantly stolen from the Arch wiki
-function man()
-{
-    env LESS_TERMCAP_mb=$(printf "\e[1;31m") \
-        LESS_TERMCAP_md=$(printf "\e[1;31m") \
-        LESS_TERMCAP_me=$(printf "\e[0m") \
-        LESS_TERMCAP_se=$(printf "\e[0m") \
-        LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
-        LESS_TERMCAP_ue=$(printf "\e[0m") \
-        LESS_TERMCAP_us=$(printf "\e[1;32m") \
-        man "$@"
-}
-
 #exports
-export -f httpserv lsinet man
-
-#this nests screen sessions to save layout across detatches
-# function nestscreen()
-# {
-#     local name=${@-"nested"}
-#     local innerName="inner"${name}
-#     
-#     screen -dmS "$innerName"
-#     screen -S "$name" -c ~/.screenrc-container screen -x "$innerName"
-# }
+export -f httpserv lsinet
 
 ##login/logout info
 #display some neat info on login
