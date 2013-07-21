@@ -5,7 +5,7 @@ from urllib2 import urlopen, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.12"
+VERSION = "1.13"
 REPO_NAME = "Yoplitein/tildeslash"
 
 #globals
@@ -127,7 +127,7 @@ def main():
     
     #Log to syslog if running silently
     def silentLog(msg):
-        syslog.syslog("[%s:%s] %s" % (os.environ("USER"), os.path.basename(os.getcwd()), msg))
+        syslog.syslog("[%s:%s] %s" % (os.environ["USER"], os.path.basename(os.getcwd()), msg))
         
     if args.runSilent:
         log = silentLog
