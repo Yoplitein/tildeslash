@@ -1,4 +1,4 @@
-#Yoplitein's exquisite ~/.bashrc
+###Yoplitein's exquisite ~/.bashrc
 #warning: may contain small amounts of command-line kung-fu
 
 #if not running interactively, don't do anything
@@ -40,21 +40,23 @@ fi
 export DISTRO
 
 ##custom prompt stuff
-#used to fix some screen buggyness, may remove this eventually
+#works around some tput shortcomings
 function build_title_string()
 {
-    #local titleStr
-    #
-    #case $TERM in
-    #    *) titleStr="\033]0;$@\007";;
-    #esac
+    local titleStr
     
-    echo -n "\033]0;$@\007" #$titleStr
+    case $TERM in
+        screen) titleStr="\033]2$@\033\\\\";;
+        xterm) titleStr="$(env TERM=xterm+sl tput tsl)$@$(env TERM=xterm+sl tput fsl)";;
+        putty) titleStr="$(tput tsl)$@$(tput fsl)";;
+        *) titleStr="";;
+    esac
+    
+    echo -n $titleStr
 }
 
 #display the running command in the title
 #solution courtesy of Gilles from superuser.com
-#TODO: make it work with tmux
 function preexec() { :; }
 function preexec_invoke()
 {
@@ -72,11 +74,7 @@ function preexec_invoke()
 trap "preexec_invoke" DEBUG
 
 #sets the window's title
-SETTITLE="\[$(build_title_string "\\u@\\h:\\w")"
-
-case $TERM in
-    *) SETTITLE+="\]";;
-esac
+SETTITLE="\[$(build_title_string "\\u@\\h:\\w")\]"
 
 #I love the fuck out of colors. Seriously.
 NORMAL_COLOR="\[$(tput sgr0)\]"

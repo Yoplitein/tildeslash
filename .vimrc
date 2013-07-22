@@ -1,3 +1,6 @@
+"""Yoplitein's simple and sweet .vimrc
+
+""general stuff
 "disable Vi compatability; enable syntax highlight,
 "spaces instead of tabs, line/column numbers,
 "highlighted searches and line numbers
@@ -15,16 +18,20 @@ if match($TERM, "screen")!=-1
     set term=xterm
 endif
 
-"enables pressing F1 to remove search highlights
+""binds and other automation
 nnoremap <F1> :noh<return><esc>
+nnoremap <F2> :set nonumber!<CR>
+nnoremap <F5> :undo<CR>
+nnoremap <F6> :redo<CR>
 
-"sets F2 to toggle pasting mode
-set pastetoggle=<F2>
+"sets F3 to toggle pasting mode
+set pastetoggle=<F3>
 
-"sets F3 to toggle line numbers
-nnoremap <F3> :set nonumber!<CR>
+"clears entire buffer
+command ClearPaste call feedkeys("G\<End>vggd")
+nnoremap <F4> :ClearPaste<CR>
 
-"Enable automatic indentation
+""Enable automatic indentation
 if has("autocmd")
   filetype plugin indent on
   autocmd BufReadPost *
