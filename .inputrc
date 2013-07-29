@@ -1,0 +1,6 @@
+set show-all-if-ambiguous on
+set bell-style audible
+set input-meta on
+set convert-meta off
+set output-meta on
+set completion-query-items 30
