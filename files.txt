@@ -2,7 +2,7 @@
 .bash_profile
 .bash_logout
 .vimrc
-.inputrc
+_stale.inputrc
 _stale.screenrc
 _stale.screenrc-container
 .muttrc

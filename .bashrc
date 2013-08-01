@@ -26,6 +26,15 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+#readline options
+bind "set show-all-if-ambiguous on"
+bind "set bell-style audible"
+bind "set input-meta on"
+bind "set convert-meta off"
+bind "set output-meta on"
+bind "set completion-query-items 50"
+bind "set completion-ignore-case on"
+
 ##determine the distro we're on
 DISTRO=unknown
 
