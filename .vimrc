@@ -12,6 +12,7 @@ set expandtab
 set ruler
 set hlsearch
 set nu
+set smartcase
 
 "fix for function key weirdness under screen
 if match($TERM, "screen")!=-1
