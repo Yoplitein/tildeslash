@@ -12,6 +12,7 @@ set expandtab
 set ruler
 set hlsearch
 set nu
+set ignorecase
 set smartcase
 
 "fix for function key weirdness under screen
@@ -32,7 +33,16 @@ set pastetoggle=<F3>
 command ClearPaste call feedkeys("G\<End>vggd")
 nnoremap <F4> :ClearPaste<CR>
 
+"move lines up and down
+command MoveLineUp call feedkeys(line(".")==1?"":"ddkkp")
+command MoveLineDown call feedkeys("ddp")
+
+nnoremap w :MoveLineUp<CR>
+nnoremap s :MoveLineDown<CR>
+
 ""Enable automatic indentation
+"stolen from somewhere, I don't remember where though
+"probably Stack Overflow
 if has("autocmd")
   filetype plugin indent on
   autocmd BufReadPost *
