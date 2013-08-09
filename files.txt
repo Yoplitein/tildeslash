@@ -3,8 +3,6 @@
 .bash_logout
 .vimrc
 _stale.inputrc
-_stale.screenrc
-_stale.screenrc-container
 .muttrc
 .tmux.conf
 bin/afk
