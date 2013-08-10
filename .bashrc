@@ -162,7 +162,7 @@ function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
 
 #stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
-alias sudo='env PATH=$PATH:/usr/sbin:/sbin sudo -E'
+#alias sudo='env PATH=$PATH:/usr/sbin:/sbin sudo -E'
 alias last='last -10'
 alias lastb='lastb -10'
 
