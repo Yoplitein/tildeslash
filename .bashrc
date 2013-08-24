@@ -26,6 +26,9 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+#completion for make seems to be broken, under Arch anyway
+complete -f make
+
 #readline options
 bind "set show-all-if-ambiguous on"
 bind "set bell-style audible"
@@ -188,7 +191,7 @@ if [ "$LOGIN_INFO_SHOWN" == "" ]; then
     echo Welcome to $(tput bold)$(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
     echo System uptime: $(tput bold)$(tput setaf 1)$(python ~/bin/uptime)$(tput sgr0)
     echo Users connected: $(tput bold)$(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
-    echo Language and encoding: $(tput bold)$(tput setaf 6)$LANG$(tput sgr0)
+    echo Language and encoding: $(tput bold)$(tput setaf 6)${LANG-unknown}$(tput sgr0)
     echo QOTD: $(tput bold)$(tput setaf 5)$(python ~/bin/qotd)$(tput sgr0)
     
     export LOGIN_INFO_SHOWN=1
