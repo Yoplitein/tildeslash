@@ -40,6 +40,13 @@ command MoveLineDown call feedkeys("ddp")
 nnoremap w :MoveLineUp<CR>
 nnoremap s :MoveLineDown<CR>
 
+"don't delete blank lines
+inoremap <CR> <CR>x<BS>
+
+""highlighting settings
+"change comments to a light blue (courtesy of Kev)
+hi comment ctermfg=blue
+
 ""Enable automatic indentation
 "stolen from somewhere, I don't remember where though
 "probably Stack Overflow
