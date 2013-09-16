@@ -59,7 +59,18 @@ function build_title_string()
     
     case $TERM in
         screen) titleStr="\033]2$@\033\\\\";;
-        xterm) titleStr="$(env TERM=xterm+sl tput tsl)$@$(env TERM=xterm+sl tput fsl)";;
+        xterm)
+            local termType="xterm"
+            
+            if [ "$(tput tsl)" == "" ]; then #certain distros' termcaps require xterm+sl, others are satisfied with xterm
+                if [ "$(env TERM=xterm+sl tput tsl)" == "" ]; then
+                    break;
+                else
+                    termType="xterm+sl"
+                fi
+            fi
+            
+            titleStr="$(env TERM=$termType tput tsl)$@$(env TERM=$termType tput fsl)";;
         putty) titleStr="$(tput tsl)$@$(tput fsl)";;
         *) titleStr="";;
     esac
@@ -98,7 +109,13 @@ PURPLE_COLOR="\[$(tput setaf 5)\]"
 CYAN_COLOR="\[$(tput setaf 6)\]"
 BOLD_COLOR="\[$(tput bold)\]"
 
-export PS1="$SETTITLE$YELLOW_COLOR[\D{%H:%M:%S}]$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $RED_COLOR\$(err=\$?; if [ \$err -ne 0 ]; then echo \"\$err \"; fi)$CYAN_COLOR\$$NORMAL_COLOR"
+PS1="$SETTITLE"
+
+if [ ! -v "TMUX" ]; then
+    PS1="$PS1$YELLOW_COLOR[\D{%H:%M:%S}]"
+fi
+
+export PS1="$PS1$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $RED_COLOR\$(err=\$?; if [ \$err -ne 0 ]; then echo \"\$err \"; fi)$CYAN_COLOR\$$NORMAL_COLOR"
 
 #clean up a bit
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
@@ -123,12 +140,14 @@ export PAGER=less
 #set default editor
 editor=$EDITOR
 
-if [ -e "$(which vim 2>/dev/null)" ]; then
+if command -v vim >/dev/null; then
     editor=vim
-elif [ -e "$(which vi 2>/dev/null)" ]; then #some systems have vi but not vim
+elif command -v vi >/dev/null; then #some systems have vi but not vim
     editor=vi
-elif [ -e "$(which nano 2>/dev/null)" ]; then #if there's no vi/m then nano is a nice editor too
+elif command -v nano >/dev/null; then #if there's no vi/m then nano is a nice editor too
     editor=nano
+else
+    echo "Warning: no (sane) editor found on system"
 fi
 
 export EDITOR=$editor
@@ -136,8 +155,9 @@ unset editor
 
 ##aliases and broken/stupid functionality fixes
 #general aliases
-alias ls='ls -AF --color=always'
-alias lsl='ls -AFhl --color=always'
+alias ls='ls -A --color=auto'
+alias lsc='ls -F --color=auto'
+alias lsl='ls -Ahl --color=auto'
 alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
 alias psa='ps -A'
 alias cls='clear'
@@ -148,6 +168,7 @@ alias errlvl='echo $?'
 alias cata='cat -A'
 alias lc='wc -l'
 alias less='less -R'
+alias grep='grep -n'
 
 if [ "$DISTRO" == "arch" ]; then
     alias netstat='ss'
@@ -165,15 +186,15 @@ function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
 
 #stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
-#alias sudo='env PATH=$PATH:/usr/sbin:/sbin sudo -E'
 alias last='last -10'
 alias lastb='lastb -10'
 
 #colors are fun! wheee!!
-alias grep='grep --color=always'
-alias grepi='grep --color=always -i'
-alias fgrep='grep -F --color=always'
-alias egrep='grep -E --color=always'
+alias grep='grep --color=auto'
+alias grepi='grep -i --color=auto'
+alias fgrep='grep -F --color=auto'
+alias egrep='grep -E --color=auto'
+alias greps='grep -nir --color=auto'
 
 ##functions
 #you never know when you might want to quickly browse the current directory through a browser, or something
@@ -182,19 +203,44 @@ function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
 #prints all active connections (functionize'd for exportability to root shells)
 function lsinet() { netstat -nepaA inet; }
 
+#simple tmux wrapper that creates a session, if one doesn't exist, when attaching
+if [ $(command -v tmux) ]; then
+    function tmux()
+    {
+        local tmux=$(which tmux)
+        
+        if [[ $1 == at* ]]; then #attaching to a session
+            if $tmux has-session 2>/dev/null; then
+                $tmux at
+            else
+                $tmux new-session -d
+                $tmux send-keys clear\;echo\ "Created new session." C-m
+                $tmux at
+            fi
+        else
+            $tmux $@
+        fi
+    }
+fi
+
 #exports
 export -f httpserv lsinet
 
+#execute site-specific configurations
+if [ -e ~/.bashrc-site ]; then
+    source ~/.bashrc-site
+fi
+
 ##login/logout info
 #display some neat info on login
-if [ "$LOGIN_INFO_SHOWN" == "" ]; then
+if [ "$DISABLE_LOGIN_INFO" == "" ]; then
     echo Welcome to $(tput bold)$(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
     echo System uptime: $(tput bold)$(tput setaf 1)$(python ~/bin/uptime)$(tput sgr0)
     echo Users connected: $(tput bold)$(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
     echo Language and encoding: $(tput bold)$(tput setaf 6)${LANG-unknown}$(tput sgr0)
     echo QOTD: $(tput bold)$(tput setaf 5)$(python ~/bin/qotd)$(tput sgr0)
     
-    export LOGIN_INFO_SHOWN=1
+    export DISABLE_LOGIN_INFO=1
 fi
 
 #display an interesting logout message
@@ -208,7 +254,7 @@ function handle_logout()
         fi
     fi
     
-    if [ ! -e "$(which shuf 2>/dev/null)" ]; then
+    if [ ! $(command -v shuf) ]; then
         function shuf()
         {
             echo -e "1\n2\n3\n4\n5\n6"
@@ -251,8 +297,3 @@ trap handle_logout EXIT
 
 # :3
 function colors() { handle_logout ${@-"Colorful"}; }
-
-#execute site-specific configurations
-if [ -e ~/.bashrc-site ]; then
-    source ~/.bashrc-site
-fi
