@@ -111,7 +111,7 @@ BOLD_COLOR="\[$(tput bold)\]"
 
 PS1="$SETTITLE"
 
-if [ ! -v "TMUX" ]; then
+if [ -z "$TMUX" ]; then
     PS1="$PS1$YELLOW_COLOR[\D{%H:%M:%S}]"
 fi
 
