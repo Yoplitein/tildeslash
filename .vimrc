@@ -4,10 +4,12 @@
 "disable Vi compatability; enable syntax highlight,
 "spaces instead of tabs, line/column numbers,
 "highlighted searches and line numbers
+"all that good stuff, basically
 set nocompatible
 syntax on
 set tabstop=4
 set shiftwidth=4
+set softtabstop=4
 set expandtab
 set ruler
 set hlsearch
