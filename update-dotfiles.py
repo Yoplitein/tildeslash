@@ -1,33 +1,51 @@
 #!/usr/bin/env python
 #This fetches the latest files from the repo and puts them in the given folder
 from __future__ import with_statement
-from urllib2 import urlopen, HTTPError, URLError
+from urllib2 import Request, build_opener, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.13"
+VERSION = "1.14"
 REPO_NAME = "Yoplitein/tildeslash"
 
+try:
+    import json
+except ImportError:
+    try:
+        import simplejson as json
+    except ImportError:
+        log("Fatal: json/simplejson module not importable. Exiting.")
+        
+        raise SystemExit(1)
+
 #globals
-args = log = json = baseURL = revisionHash = None
+args = log = baseURL = revisionHash = None
+opener = build_opener()
 
 def getFile(url, logName):
     file = None
+    
     try:
-        file = urlopen(url)
+        req = Request(url)
+        
+        req.add_header("Pragma", "no-cache")
+        
+        file = opener.open(req)
     except (HTTPError, URLError) as e:
         if type(e) is URLError:
             message = e.reason.strerror.lower()
         else:
             message = "server returned: %s" % str(e)
-            
+        
         log("Error fetching %s, %s" % (logName, message))
         raise SystemExit, 1
     
     contents = file.read()
+    
     file.close()
+    
     return contents
-
+    
 def getBaseURL():
     global revisionHash
     
@@ -35,14 +53,14 @@ def getBaseURL():
         getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
     
     return "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
-
+    
 def tryUpdateSelf():
     repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
     scope = {}
     
     try:
         exec repoUpdateDotfiles in scope
-    
+        
         if scope["VERSION"] != VERSION: #We're out of date! D:
             log("Attempting to update self..")
             
@@ -75,22 +93,16 @@ def parseFileList(fileList):
     folderNames = fileFolderList[1].split("\n")
     
     #Remove empty strings from file and folder list
-    try:
-        while True:
-            fileNames.remove('')
-    except ValueError:
-        pass
+    for x in range(0, fileNames.count('')):
+        fileNames.remove('')
     
-    try:
-        while True:
-            folderNames.remove('')
-    except ValueError:
-        pass
+    for x in range(0, folderNames.count('')):
+        folderNames.remove('')
     
     return fileNames, folderNames
 
 def main():
-    global args, log, json, baseURL
+    global args, log, json, baseURL, VERSION
     
     #Get options
     parser = ArgumentParser(description="Updates your dotfiles with copies from a central repository.",
@@ -103,15 +115,32 @@ def main():
     parser.add_argument("-C", "--no-check-hash", dest="logHash",
                 help="don't check for revision hash in .dotfileshash", action="store_false", default=True)
     parser.add_argument("-v", "--version", dest="checkVersion",
-                help="check update-dotfiles version", action="store_true", default=False)
+                help="print update-dotfiles version", action="store_true", default=False)
+    parser.add_argument("-V", dest="checkFilesVersion",
+                help="print dotfiles version and exit.", action="store_true", default=False)
+    parser.add_argument("-r", "--remote", dest="useRemote",
+                help="checks remote (repository) version instead", action="store_true", default=False)
     parser.add_argument("-n", "--no-update", dest="doUpdate",
-                help="Don't attempt to update self", action="store_false", default=True)
+                help="don't attempt to update self", action="store_false", default=True)
     parser.add_argument("-f", "--force-update", dest="forceUpdate", action="store_true", default=False,
-                help="Attempt to force update self")
+                help="attempt to force update self")
     
     args = parser.parse_args()
     
-    if(args.checkVersion):
+    if args.checkVersion:
+        if args.useRemote:
+            repoUpdateDotfiles = getFile(getBaseURL() + "update-dotfiles.py", "update-dotfiles.py")
+            scope = {}
+            
+            try:
+                exec repoUpdateDotfiles in scope
+                
+                VERSION = "(remote) " + scope["VERSION"]
+            except:
+                print "Remote update-dotfiles did not execute properly."
+                
+                raise SystemExit
+        
         print "update-dotfiles version %s" % VERSION
         
         fileMTime = time.ctime(os.path.getmtime(__file__))
@@ -119,6 +148,21 @@ def main():
         print "Script last updated on %s" % fileMTime
         
         raise SystemExit
+    
+    if args.checkFilesVersion:
+        if args.useRemote:
+            getBaseURL()
+            
+            print "Remote dotfiles are at version", revisionHash
+            
+            raise SystemExit
+        else:
+            print "Dotfiles are at version",
+            
+            with open("%s/.dotfileshash" % (args.directory,), "r") as hash:
+                print hash.read(), "\b."
+            
+            raise SystemExit
     
     #Log to stdout by default
     def stdoutLog(message):
@@ -128,23 +172,11 @@ def main():
     #Log to syslog if running silently
     def silentLog(msg):
         syslog.syslog("[%s:%s] %s" % (os.environ["USER"], os.path.basename(os.getcwd()), msg))
-        
+    
     if args.runSilent:
         log = silentLog
     else:
         log = stdoutLog
-    
-    try:
-        import json as _json
-    except ImportError:
-        try:
-            import simplejson as _json
-        except ImportError:
-            log("Fatal: json/simplejson module not importable. Exiting.")
-            
-            raise SystemExit, 1
-    
-    json = _json
     
     #Confirm, for safety's sake
     if not args.runSilent:
@@ -157,11 +189,12 @@ def main():
     
     baseURL = getBaseURL()
     
-    #attempt to update if we're root
-    #or if an update is forced
-    #or if update-dotfiles is in the executing user's home directory
-    #unless updating is turned off (--no-update)
-    if (os.geteuid() == 0 or args.forceUpdate or (os.environ["HOME"] in os.path.abspath(__file__))) and args.doUpdate:
+    #attempt to update
+    if ((os.geteuid() == 0 #if we're root
+         or (os.environ["HOME"] in os.path.abspath(__file__))) #or if the script is in the user's home directory
+         or args.forceUpdate #or we're forced
+         and args.doUpdate): #unless updating is turned off entirely
+        
         tryUpdateSelf()
     
     #Change to the specified directory
@@ -174,8 +207,8 @@ def main():
             
             with open(".dotfileshash", "r") as f:
                 hash = f.read()
-            
-            if(hash == revisionHash):
+                
+            if hash == revisionHash:
                 log("All files are at latest revision, exiting")
                 
                 raise SystemExit
