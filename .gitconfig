@@ -1,0 +1,7 @@
+[user]
+	name = Steven Dwy
+	email = yoplitein+git@gmail.com
+[push]
+	default = nothing
+[color]
+	ui = true
