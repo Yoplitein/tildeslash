@@ -1,3 +1,6 @@
 [ui]
 username = Steven Dwy <yoplitein+hg@gmail.com>
 
+[extensions]
+color = 
+
