@@ -101,6 +101,12 @@ def parseFileList(fileList):
     
     return fileNames, folderNames
 
+def getUsername():
+    try:
+        return os.environ["USER"]
+    except KeyError:
+        return os.path.basename(os.environ["HOME"])
+
 def main():
     global args, log, json, baseURL, VERSION
     
@@ -171,7 +177,7 @@ def main():
     
     #Log to syslog if running silently
     def silentLog(msg):
-        syslog.syslog("[%s:%s] %s" % (os.environ["USER"], os.path.basename(os.getcwd()), msg))
+        syslog.syslog("[%s:%s] %s" % (getUsername(), os.path.basename(os.getcwd()), msg))
     
     if args.runSilent:
         log = silentLog
