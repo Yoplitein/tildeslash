@@ -5,6 +5,8 @@
 _stale.inputrc
 .muttrc
 .tmux.conf
+.hgrc
+.gitconfig
 bin/afk
 bin/uptime
 bin/qotd
