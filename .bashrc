@@ -297,3 +297,26 @@ trap handle_logout EXIT
 
 # :3
 function colors() { handle_logout ${@-"Colorful"}; }
+
+#run ssh-agent when logging in (if it exists)
+if command -v ssh-agent > /dev/null; then
+    if [ "$(psu $USER | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then #just logged in
+        exec ssh-agent /bin/bash
+    else
+        if [ "$SSH_AUTH_SOCK" != "$HOME/.ssh/agent.sock" ]; then #we're in the shell running under ssh-agent
+            ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
+            
+            [ -e ~/.ssh/id_rsa ] && ssh-add ~/.ssh/id_rsa
+            
+            #TODO: run this automatically upon reattach
+            function fixenv()
+            {
+                export SSH_AGENT_PID=$(cat ~/.ssh/agent.pid)
+            }
+            
+            export -f fixenv
+            export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+            echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
+        fi
+    fi
+fi
