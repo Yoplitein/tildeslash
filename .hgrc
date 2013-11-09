@@ -4,3 +4,7 @@ username = Steven Dwy <yoplitein+hg@gmail.com>
 [extensions]
 color = 
 
+[alias]
+co = update
+cm = commit
+ls = !echo -e "On branch $(hg branch)"; hg status $@

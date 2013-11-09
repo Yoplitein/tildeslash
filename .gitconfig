@@ -1,7 +1,16 @@
 [user]
 	name = Steven Dwy
 	email = yoplitein+git@gmail.com
+
 [push]
 	default = nothing
+
 [color]
-	ui = true
+    ui = true
+
+[alias]
+    ls = status
+    co = checkout
+    cm = commit
+    rmbranch = branch -d
+    ada = add . --all
