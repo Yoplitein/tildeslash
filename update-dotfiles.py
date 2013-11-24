@@ -7,6 +7,7 @@ import os, syslog, time, subprocess, stat, glob
 
 VERSION = "1.14"
 REPO_NAME = "Yoplitein/tildeslash"
+REPO_HOST = "bitbucket"
 
 try:
     import json
@@ -38,22 +39,38 @@ def getFile(url, logName):
             message = "server returned: %s" % str(e)
         
         log("Error fetching %s, %s" % (logName, message))
+        
         raise SystemExit, 1
     
     contents = file.read()
     
     file.close()
     
-    return contents
-    
-def getBaseURL():
+    return contents    
+
+def getBaseURLBitbucket():
     global revisionHash
     
-    revisionHash = json.loads(\
-        getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
+    revisionHash = json.loads(
+            getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
     
     return "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
+
+def getBaseURLGithub():
+    global revisionHash
     
+    revisionHash = json.loads(getFile("https://api.github.com/repos/" + REPO_NAME + "/git/refs", "refs"))[0]["object"]["url"].split("/")[-1]
+    
+    return "https://github.com/" + REPO_NAME + "/raw/" + revisionHash + "/"
+
+def getBaseURL():
+    if   REPO_HOST == "bitbucket":
+        return getBaseURLBitbucket()
+    elif REPO_HOST == "github":
+        return getBaseURLGithub()
+    else:
+        log("Unknown repository host '%s'" % (REPO_HOST,))
+
 def tryUpdateSelf():
     repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
     scope = {}
