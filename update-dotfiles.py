@@ -186,9 +186,9 @@ def main():
     
     #Confirm, for safety's sake
     if not args.runSilent:
-        yesNo = raw_input("Are you sure? (y/N) ")
+        yesNo = raw_input("Are you sure? (Y/n) ")
         
-        if yesNo != "y":
+        if yesNo.lower() not in ["y", ""]:
             log("Aborting.")
             
             raise SystemExit, 1
