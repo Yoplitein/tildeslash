@@ -5,6 +5,10 @@ set move=no
 #show me dem headers
 set edit_headers=yes
 
+#automatically fetch new emails
+set check_new=yes
+set mail_check=5
+
 #color scheme blatantly stolen from Debian 6
 #authored by Dmitry Borodaenko <angdraug@mail.ru>
 color normal    white default

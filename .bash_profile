@@ -300,23 +300,29 @@ function colors() { handle_logout ${@-"Colorful"}; }
 
 #run ssh-agent when logging in (if it exists)
 if command -v ssh-agent > /dev/null; then
-    if [ "$(psu $USER | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then #just logged in
-        exec ssh-agent /bin/bash
-    else
-        if [ "$SSH_AUTH_SOCK" != "$HOME/.ssh/agent.sock" ]; then #we're in the shell running under ssh-agent
-            ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
-            
-            [ -e ~/.ssh/id_rsa ] && ssh-add ~/.ssh/id_rsa
-            
-            #TODO: run this automatically upon reattach
-            function fixenv()
-            {
-                export SSH_AGENT_PID=$(cat ~/.ssh/agent.pid)
-            }
-            
-            export -f fixenv
-            export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
-            echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
-        fi
+    #only run it when first logging in, and only if it's not already running
+    if [ "$SHLVL" -eq "1" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then
+        eval $(ssh-agent -s)
+        
+        ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
+        
+        #TODO: run this automatically upon reattach
+        function fixenv()
+        {
+            export SSH_AGENT_PID=$(cat ~/.ssh/agent.pid)
+        }
+        function addkey() { ssh-add $@; }
+        function kill_agent()
+        {
+            ssh-agent -k > /dev/null 2>&1
+            handle_logout
+        }
+        
+        alias addkey="ssh-add"
+        export -f fixenv addkey
+        export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+        echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
+        trap kill_agent EXIT
     fi
 fi
+
