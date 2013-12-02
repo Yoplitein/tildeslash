@@ -169,6 +169,7 @@ alias cata='cat -A'
 alias lc='wc -l'
 alias less='less -R'
 alias grep='grep -n'
+alias dm='dirman'
 
 if [ "$DISTRO" == "arch" ]; then
     alias netstat='ss'
@@ -183,6 +184,9 @@ function psu() { ps -u ${1-$USER}; }
 
 #searches process list, including column names
 function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
+
+#shell support for dirman
+function dirman { eval $(~/bin/dirman $@); }
 
 #stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
@@ -226,13 +230,14 @@ fi
 #exports
 export -f httpserv lsinet
 
+if [  ]
+
 #execute site-specific configurations
 if [ -e ~/.bashrc-site ]; then
     source ~/.bashrc-site
 fi
 
-##login/logout info
-#display some neat info on login
+##display some neat info on login
 if [ "$DISABLE_LOGIN_INFO" == "" ]; then
     echo Welcome to $(tput bold)$(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
     echo System uptime: $(tput bold)$(tput setaf 1)$(python ~/bin/uptime)$(tput sgr0)
@@ -241,6 +246,34 @@ if [ "$DISABLE_LOGIN_INFO" == "" ]; then
     echo QOTD: $(tput bold)$(tput setaf 5)$(python ~/bin/qotd)$(tput sgr0)
     
     export DISABLE_LOGIN_INFO=1
+fi
+
+##run ssh-agent when logging in (if it exists)
+if command -v ssh-agent > /dev/null; then
+    #only run it when first logging in, and only if it's not already running
+    if [ "$SHLVL" -eq "1" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then
+        eval $(ssh-agent -s)
+        
+        ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
+        
+        function kill_agent()
+        {
+            ssh-agent -k > /dev/null 2>&1
+            handle_logout
+        }
+        
+        echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
+        trap kill_agent EXIT
+    fi
+    
+    function fixenv()
+    {
+        export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+        export SSH_AGENT_PID=$(cat ~/.ssh/agent.pid)
+    }
+    function addkey() { ssh-add $@; }
+    
+    export -f fixenv addkey
 fi
 
 #display an interesting logout message
@@ -297,32 +330,3 @@ trap handle_logout EXIT
 
 # :3
 function colors() { handle_logout ${@-"Colorful"}; }
-
-#run ssh-agent when logging in (if it exists)
-if command -v ssh-agent > /dev/null; then
-    #only run it when first logging in, and only if it's not already running
-    if [ "$SHLVL" -eq "1" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then
-        eval $(ssh-agent -s)
-        
-        ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
-        
-        #TODO: run this automatically upon reattach
-        function fixenv()
-        {
-            export SSH_AGENT_PID=$(cat ~/.ssh/agent.pid)
-        }
-        function addkey() { ssh-add $@; }
-        function kill_agent()
-        {
-            ssh-agent -k > /dev/null 2>&1
-            handle_logout
-        }
-        
-        alias addkey="ssh-add"
-        export -f fixenv addkey
-        export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
-        echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
-        trap kill_agent EXIT
-    fi
-fi
-
