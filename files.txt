@@ -10,5 +10,6 @@ _stale.inputrc
 bin/afk
 bin/uptime
 bin/qotd
+bin/dirman
 --FOLDERS--
 bin
