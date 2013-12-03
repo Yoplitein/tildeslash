@@ -155,40 +155,40 @@ def handle_help(args):
     
     echo(help)
 
-def main(target, args):
+def main(cmd, args):
     global dirs, dirIndex, output, changeDirs
     
     dirs = get_dirs()
     dirIndex = int(os.environ.get("DIRINDEX", "0"))
     handlerArgs = (args,)
     
-    if   target in ["ls"]:
+    if   cmd in ["ls"]:
         handler = handle_list
         output = "true"
-    elif target in ["pwd", "cd"]:
+    elif cmd in ["pwd", "cd"]:
         handler = handle_current_dir
         output = "true"
-    elif target in ["next", "n"]:
+    elif cmd in ["next", "n"]:
         handler = handle_switch
-    elif target in ["prev", "p"]:
+    elif cmd in ["prev", "p"]:
         handler = handle_switch
         handlerArgs += (-1,)
-    elif target in ["move", "mv"]:
+    elif cmd in ["move", "mv"]:
         handler = handle_move
-    elif target in ["add", "a"]:
+    elif cmd in ["add", "a"]:
         handler = handle_add
-    elif target in ["rm"]:
+    elif cmd in ["rm"]:
         handler = handle_remove
-    elif target in ["dirman", "help", "-h", "--help"]:
+    elif cmd in ["dirman", "help", "-h", "--help"]:
         handler = handle_help
         output = "true"
     else:
         try: #switch dirs by index
             handler = lambda args: None
-            dirIndex = int(target)
+            dirIndex = int(cmd)
             changeDirs = True
         except ValueError:
-            handler = lambda args: echo("Unknown command:", target)
+            handler = lambda args: echo("Unknown command:", cmd)
             
             output = "false"
     

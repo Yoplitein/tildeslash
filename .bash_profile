@@ -186,7 +186,7 @@ function psu() { ps -u ${1-$USER}; }
 function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
 
 #shell support for dirman
-function dirman { eval $(~/bin/dirman $@); }
+function dirman() { eval $(~/bin/dirman $@); }
 
 #stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
@@ -229,8 +229,6 @@ fi
 
 #exports
 export -f httpserv lsinet
-
-if [  ]
 
 #execute site-specific configurations
 if [ -e ~/.bashrc-site ]; then
