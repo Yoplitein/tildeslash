@@ -1,9 +1,9 @@
 [user]
-	name = Steven Dwy
-	email = yoplitein+git@gmail.com
+    name = Steven Dwy
+    email = yoplitein+git@gmail.com
 
 [push]
-	default = nothing
+    default = current
 
 [color]
     ui = true
