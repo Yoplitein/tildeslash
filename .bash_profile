@@ -1,4 +1,4 @@
-###Yoplitein's exquisite ~/.bashrc
+###Yoplitein's exquisite ~/.bash_profile
 #warning: may contain small amounts of command-line kung-fu
 
 #if not running interactively, don't do anything
@@ -183,7 +183,7 @@ alias df='df -h'
 function psu() { ps -u ${1-$USER}; }
 
 #searches process list, including column names
-function pss() { psa | awk "NR == 1 || /$1/" | grep -v "/$1/"; }
+function pss() { psa | grep -E "($@|%CPU)" | grep -v grep; }
 
 #shell support for dirman
 function dirman() { eval $(~/bin/dirman $@); }
