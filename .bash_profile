@@ -188,6 +188,9 @@ function pss() { psa | grep -E "($@|%CPU)" | grep -v grep; }
 #shell support for dirman
 function dirman() { eval $(~/bin/dirman $@); }
 
+#search files for a string in a directory
+function search() { grep -nir "$1" ${2-.}; }
+
 #stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
 alias last='last -10'
