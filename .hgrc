@@ -3,6 +3,10 @@ username = Steven Dwy <yoplitein+hg@gmail.com>
 
 [extensions]
 color = 
+pager = 
+
+[pager]
+pager = LESS='FRX' less
 
 [alias]
 co = update

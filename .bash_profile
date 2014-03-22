@@ -156,29 +156,35 @@ unset editor
 ##aliases and broken/stupid functionality fixes
 #general aliases
 alias ls='ls -A --color=auto'
-alias lsc='ls -F --color=auto'
 alias lsl='ls -Ahl --color=auto'
 alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
 alias psa='ps -A'
 alias cls='clear'
 alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
-alias screens='tmux ls'
-alias errlvl='echo $?'
 alias cata='cat -A'
-alias lc='wc -l'
 alias less='less -R'
-alias grep='grep -n'
 alias dm='dirman'
 
-if [ "$DISTRO" == "arch" ]; then
-    alias netstat='ss'
-fi
+#stupid openSUSE behaviour fixes
+alias man='env MAN_POSIXLY_CORRECT=true man'
+alias last='last -10'
+alias lastb='lastb -10'
+
+#colors are fun! wheee!!
+alias grep='grep --color=auto'
+alias grepi='grep -i --color=auto'
+alias egrep='grep -E --color=auto'
 
 #I should have to pass arguments to specify non-human-readable, ffs
 alias du='du -h'
 alias df='df -h'
 
+if [ "$DISTRO" == "arch" ]; then
+    alias netstat='ss'
+fi
+
+##functions
 #finds processes owned by specified user (default self)
 function psu() { ps -u ${1-$USER}; }
 
@@ -191,19 +197,6 @@ function dirman() { eval $(~/bin/dirman $@); }
 #search files for a string in a directory
 function search() { grep -nir "$1" ${2-.}; }
 
-#stupid openSUSE behaviour fixes
-alias man='env MAN_POSIXLY_CORRECT=true man'
-alias last='last -10'
-alias lastb='lastb -10'
-
-#colors are fun! wheee!!
-alias grep='grep --color=auto'
-alias grepi='grep -i --color=auto'
-alias fgrep='grep -F --color=auto'
-alias egrep='grep -E --color=auto'
-alias greps='grep -nir --color=auto'
-
-##functions
 #you never know when you might want to quickly browse the current directory through a browser, or something
 function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
 
