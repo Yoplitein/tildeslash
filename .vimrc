@@ -45,6 +45,9 @@ nnoremap s :MoveLineDown<CR>
 "don't delete blank lines
 inoremap <CR> <CR>x<BS>
 
+"goppend made me do it
+nnoremap x :echo "hi goppend"<CR>
+
 ""highlighting settings
 "change comments to a light blue (courtesy of Kev)
 hi comment ctermfg=blue
