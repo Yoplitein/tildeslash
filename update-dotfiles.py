@@ -8,6 +8,7 @@ import os, syslog, time, subprocess, stat, glob
 VERSION = "1.15"
 REPO_NAME = "Yoplitein/tildeslash"
 REPO_HOST = "bitbucket"
+REPO_TYPE = "git"
 
 try:
     import json
@@ -51,13 +52,22 @@ def getFile(url, logName):
 def getBaseURLBitbucket():
     global revisionHash
     
+    if   REPO_TYPE == "hg":
+        branch = "default"
+    elif REPO_TYPE == "git":
+        branch = "master"
+    else:
+        raise ValueError("Unknown repo type " + REPO_TYPE)
+    
     revisionHash = json.loads(
-            getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/default", "changesets"))["node"]
+            getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/" + branch, "changesets"))["node"]
     
     return "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
 
 def getBaseURLGithub():
     global revisionHash
+    
+    assert REPO_TYPE == "git", "Github only supports git!"
     
     revisionHash = json.loads(getFile("https://api.github.com/repos/" + REPO_NAME + "/git/refs", "refs"))[0]["object"]["url"].split("/")[-1]
     
