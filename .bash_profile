@@ -166,6 +166,7 @@ alias cata='cat -A'
 alias less='less -R'
 alias dm='dirman'
 alias where='command -V'
+alias hexdump='hexdump -vC'
 
 #stupid openSUSE behaviour fixes
 alias man='env MAN_POSIXLY_CORRECT=true man'
