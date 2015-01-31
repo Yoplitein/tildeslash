@@ -62,15 +62,15 @@ function build_title_string()
         xterm)
             local termType="xterm"
             
-            if [ "$(tput tsl)" == "" ]; then #certain distros' termcaps require xterm+sl, others are satisfied with xterm
-                if [ "$(env TERM=xterm+sl tput tsl)" == "" ]; then
-                    break;
+            if [ "$(tput tsl 2>/dev/null)" == "" ]; then #certain distros' termcaps require xterm+sl, others are satisfied with xterm
+                if [ "$(TERM=xterm+sl tput tsl 2>/dev/null)" == "" ]; then
+                    return;
                 else
                     termType="xterm+sl"
                 fi
             fi
             
-            titleStr="$(env TERM=$termType tput tsl)$@$(env TERM=$termType tput fsl)";;
+            titleStr="$(TERM=$termType tput tsl)$@$(TERM=$termType tput fsl)";;
         putty) titleStr="$(tput tsl)$@$(tput fsl)";;
         *) titleStr="";;
     esac
@@ -94,7 +94,10 @@ function preexec_invoke()
     echo -ne $(build_title_string "${USER}@$(hostname -s):${curdir##*/} \$$this_command")
     preexec "$this_command"
 }
-trap "preexec_invoke" DEBUG
+
+if tput hs; then
+    trap "preexec_invoke" DEBUG
+fi
 
 #sets the window's title
 SETTITLE="\[$(build_title_string "\\u@\\h:\\w")\]"
@@ -169,7 +172,7 @@ alias where='command -V'
 alias hexdump='hexdump -vC'
 
 #stupid openSUSE behaviour fixes
-alias man='env MAN_POSIXLY_CORRECT=true man'
+alias man='MAN_POSIXLY_CORRECT=true man'
 alias last='last -10'
 alias lastb='lastb -10'
 
