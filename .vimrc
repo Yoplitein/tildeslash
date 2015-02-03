@@ -27,6 +27,8 @@ nnoremap <F1> :noh<return><esc>
 nnoremap <F2> :set nonumber!<CR>
 nnoremap <F5> :undo<CR>
 nnoremap <F6> :redo<CR>
+nnoremap n :next<CR>
+nnoremap b :previous<CR>
 
 "sets F3 to toggle pasting mode
 set pastetoggle=<F3>
