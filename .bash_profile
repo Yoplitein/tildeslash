@@ -208,6 +208,9 @@ function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
 #prints all active connections (functionize'd for exportability to root shells)
 function lsinet() { netstat -nepaA inet; }
 
+#view all of a command's output in less
+function readout() { $@ 2>&1 | less; }
+
 #simple tmux wrapper that creates a session, if one doesn't exist, when attaching
 if [ $(command -v tmux) ]; then
     function tmux()
