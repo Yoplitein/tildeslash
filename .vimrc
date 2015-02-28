@@ -14,7 +14,7 @@ set smartindent
 
 "status line tweaks
 set laststatus=2
-set statusline=%t\ %y\ %#error#%{&modified==1?'[UNSAVED]':''}%#normal#%=\ col\ %c/row\ %l\ \ \ \ %P
+set statusline=%t\ %y\ %#error#%{&modified==1?'[UNSAVED]':''}%#StatusLine#%=\ col\ %c/row\ %l\ \ \ \ %P
 hi StatusLine ctermbg=black ctermfg=darkyellow
 
 "highlighted search
