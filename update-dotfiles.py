@@ -5,7 +5,7 @@ from urllib2 import Request, build_opener, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.16"
+VERSION = "1.17"
 REPO_NAME = "Yoplitein/tildeslash"
 REPO_HOST = "bitbucket"
 REPO_TYPE = "git"
@@ -289,9 +289,17 @@ def main():
     
     #make files in bin/ executable
     if os.path.exists("bin"):
-        for file in glob.glob("bin/*"):
+        for file in fileNames:
+            if not file.startswith("bin/"):
+                continue
+            
             mode = os.stat(file)
-            os.chmod(file, mode.st_mode | stat.S_IEXEC)
+            
+            try:
+                os.chmod(file, mode.st_mode | stat.S_IEXEC)
+                log("Marking %s as executable" % (file,))
+            except IOError:
+                log("Failed to change mode of %s" % (file,))
     
     #Write hash to .dotfileshash
     if args.logHash:
