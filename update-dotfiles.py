@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #This fetches the latest files from the repo and puts them in the given folder
 from __future__ import with_statement
 from urllib2 import Request, build_opener, HTTPError, URLError

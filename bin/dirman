@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 Similar to bash's pushd/popd, using a list instead of a stack.
 
