@@ -245,7 +245,7 @@ if [ "$DISABLE_LOGIN_INFO" == "" ]; then
     echo System uptime: $(tput bold)$(tput setaf 1)$(~/bin/uptime)$(tput sgr0)
     echo Users connected: $(tput bold)$(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
     echo Language and encoding: $(tput bold)$(tput setaf 6)${LANG-unknown}$(tput sgr0)
-    echo QOTD: $(tput bold)$(tput setaf 5)$(/bin/qotd)$(tput sgr0)
+    echo QOTD: $(tput bold)$(tput setaf 5)$(~/bin/qotd)$(tput sgr0)
     
     export DISABLE_LOGIN_INFO=1
 fi
