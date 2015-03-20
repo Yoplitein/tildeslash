@@ -231,6 +231,11 @@ if [ $(command -v tmux) ]; then
     }
 fi
 
+#use git for diffing, if it exists
+if [ $(command -v git) ]; then
+    alias diff='git diff --no-index'
+fi
+
 #exports
 export -f httpserv lsinet
 
