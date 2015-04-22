@@ -180,6 +180,7 @@ alias lastb='lastb -10'
 alias grep='grep --color=auto'
 alias grepi='grep -i --color=auto'
 alias egrep='grep -E --color=auto'
+alias pacman='pacman --color=auto'
 
 #I should have to pass arguments to specify non-human-readable, ffs
 alias du='du -h'
