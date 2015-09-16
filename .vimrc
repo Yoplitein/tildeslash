@@ -69,11 +69,8 @@ command ClearPaste call feedkeys("G\<End>vggd")
 nnoremap <F4> :ClearPaste<CR>
 
 "move lines up and down
-command MoveLineUp call feedkeys(line(".")==1?"":"ddkkp")
-command MoveLineDown call feedkeys("ddp")
-
-nnoremap w :MoveLineUp<CR>
-nnoremap s :MoveLineDown<CR>
+nnoremap w :m -2<CR>
+nnoremap s :m +1<CR>
 
 "don't strip spaces from empty lines
 inoremap <CR> <CR>x<BS>
