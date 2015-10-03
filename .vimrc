@@ -30,6 +30,9 @@ set smartcase
 "move cursor while typing out search
 set incsearch
 
+"no (awful) word wrapping
+set nowrap
+
 "disable automatic insertion of comments when starting a new line
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 
