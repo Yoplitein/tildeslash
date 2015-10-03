@@ -36,6 +36,9 @@ set nowrap
 "disable automatic insertion of comments when starting a new line
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 
+"use tabs in Makefiles
+autocmd FileType make setlocal noexpandtab
+
 "fix for function key weirdness under screen
 if match($TERM, "screen")!=-1
     set term=xterm
