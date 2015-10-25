@@ -1,44 +1,93 @@
 #!/usr/bin/env python2
-"""
-CLI wrapper for qotd.py
-"""
+import json
+import sys
+import urllib
+import urllib2
 
-import urllib2, sys
+baseUrl = "http://yoplitein.net/qotd/json"
+qotdUrl = baseUrl + "/qotd/"
+idsUrl = baseUrl + "/quote/{}"
+latestUrl = baseUrl + "/latest/"
+randomUrl = baseUrl + "/random/"
+searchUrl = baseUrl + "/search/{}"
 
-def main(url):
+def error(msg):
+    print >>sys.stderr, "Error:", msg
+    
+    raise SystemExit
+
+def get(url):
+    request = urllib2.Request(url)
+    
     try:
-        x = urllib2.urlopen(url, timeout=5)
-        print x.read().replace("\n", "")
-    except (urllib2.HTTPError, urllib2.URLError, urllib2.socket.timeout) as e:
-        reason = str(e)
+        opened = urllib2.urlopen(request)
         
-        if hasattr(e, "read") and "text/plain" in e.headers["Content-Type"]: #script sent error message
-            reason = e.read().replace("\n", "")
+        return opened.read()
+    except urllib2.HTTPError as err:
+        data = err.read()
+        data = json.loads(data)
         
-        print "Unable to fetch QOTD. (%s)" % reason
+        error("HTTP {} ({})".format(err.code, data["message"]))
 
-if __name__ == "__main__":
-    url = "http://labs.beniesbuilds.com/python/qotd/?format=raw"
+def parse(data):
+    parsed = json.loads(data)
+    result = None
     
-    if len(sys.argv) == 2:
-        arg = sys.argv[1]
+    def format(quote):
+        return "{}. {}".format(quote["id"], quote["quote"])
+    
+    if type(parsed) == dict:
+        result = format(parsed)
+    elif type(parsed) == list:
+        result = "\n".join(map(lambda q: format(q), parsed))
+    else:
+        error("Invalid response")
+    
+    return result
+
+def fetch(url):
+    return parse(get(url))
+
+def main():
+    args = sys.argv[1:]
+    
+    if len(args) == 0:
+        print fetch(qotdUrl)
         
-        if arg in ["-l", "--latest"]:
-            url += "&action=latest"
-        elif arg in ["-r", "--random"]:
-            url += "&action=random"
-        elif arg in ["-h", "--help"]:
-            print "qotd [--latest|--random|id]"
-            print "  Shows a quote from qotd.py"
-            print
-            print "  --latest - show the latest quote"
-            print "  --random - show a random quote"
-            sys.exit()
-        else:
-            try:
-                url += "&id=%d" % int(arg)
-            except ValueError:
-                print "%r is not a number!" % arg
-                sys.exit(1)
+        return
     
-    main(url)
+    cmd = args[0]
+    
+    if cmd == "latest":
+        print fetch(latestUrl)
+    elif cmd == "random":
+        print fetch(randomUrl)
+    elif cmd == "search":
+        if len(args) == 0:
+            print "Search for what?"
+            
+            return
+        
+        args = " ".join(args[1:])
+        encoded = urllib.urlencode({"q": args})[2:]
+        encoded = encoded.replace("+", " ")
+        url = searchUrl.format(encoded)
+        
+        print fetch(url)
+    else:
+        for index, arg in enumerate(args):
+            try:
+                int(arg)
+            except ValueError as err:
+                if index == 0:
+                    print "Don't know how to", cmd
+                    
+                    return
+                else:
+                    error(str(err))
+        
+        print fetch(idsUrl.format(",".join(args)))
+
+if __name__ == '__main__':
+    main()
+
