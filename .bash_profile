@@ -21,6 +21,9 @@ set +H
 #disable (fucking) XON/XOFF (Ctrl+S/Ctrl+Q)
 stty -ixon
 
+#ditto when using nested tmux sessions (???)
+stty stop undef
+
 #enable programmable completion features
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
