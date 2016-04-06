@@ -87,3 +87,7 @@ nnoremap x :echo "hi goppend"<CR>
 ""highlighting settings
 "change comments to a light blue (courtesy of Kev)
 hi comment ctermfg=blue
+
+""filetype associations
+"AngelScript
+au BufNewFile,BufRead *.as setlocal ft=cpp
