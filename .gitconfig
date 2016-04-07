@@ -15,3 +15,4 @@
     ada = add . --all
     graph = log --graph
     fixup = commit --amend --no-edit
+    oops = reset HEAD^1
