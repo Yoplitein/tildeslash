@@ -14,3 +14,4 @@
     cm = commit
     ada = add . --all
     graph = log --graph
+    fixup = commit --amend --no-edit
