@@ -12,6 +12,5 @@
     ls = status
     co = checkout
     cm = commit
-    rmbranch = branch -d
     ada = add . --all
     graph = log --graph
