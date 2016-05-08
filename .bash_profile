@@ -266,15 +266,7 @@ if command -v ssh-agent > /dev/null; then
         eval $(ssh-agent -s)
         
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
-        
-        function kill_agent()
-        {
-            ssh-agent -k > /dev/null 2>&1
-            handle_logout
-        }
-        
         echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
-        trap kill_agent EXIT
     fi
     
     function fixenv()
@@ -296,6 +288,8 @@ function handle_logout()
         if [ "$message" == "Goodbye" ]; then 
             return
         fi
+    else
+        ssh-agent -k > /dev/null 2>&1
     fi
     
     if [ ! $(command -v shuf) ]; then
