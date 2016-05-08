@@ -264,9 +264,10 @@ if command -v ssh-agent > /dev/null; then
     #only run it when first logging in, and only if it's not already running
     if [ "$SHLVL" -eq "1" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then
         eval $(ssh-agent -s)
-        
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
         echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
+        
+        export SPAWNED_SSH_AGENT=1
     fi
     
     function fixenv()
@@ -289,7 +290,9 @@ function handle_logout()
             return
         fi
     else
-        ssh-agent -k > /dev/null 2>&1
+        if [ -n $SPAWNED_SSH_AGENT ]; then
+            ssh-agent -k > /dev/null 2>&1
+        fi
     fi
     
     if [ ! $(command -v shuf) ]; then
