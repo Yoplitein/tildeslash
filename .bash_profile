@@ -2,7 +2,9 @@
 #warning: may contain small amounts of command-line kung-fu
 
 #if not running interactively, don't do anything
-[ -z "$PS1" ] && return
+if [ -z "$PS1" ]; then
+    return
+fi
 
 ##various shell options
 #don't put duplicate lines/lines beginning with a space in history
@@ -26,7 +28,7 @@ stty stop undef
 
 #enable programmable completion features
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
+    source /etc/bash_completion
 fi
 
 #completion for make seems to be broken, under Arch anyway
@@ -61,21 +63,32 @@ function build_title_string()
     local titleStr
     
     case $TERM in
-        screen) titleStr="\033]2$@\033\\\\";;
+        screen)
+            titleStr="\033]2$@\033\\\\"
+            
+            ;;
         xterm)
             local termType="xterm"
             
-            if [ "$(tput tsl 2>/dev/null)" == "" ]; then #certain distros' termcaps require xterm+sl, others are satisfied with xterm
-                if [ "$(TERM=xterm+sl tput tsl 2>/dev/null)" == "" ]; then
-                    return;
+            if [ -z "$(tput tsl 2>/dev/null)" ]; then #certain distros' termcaps require xterm+sl, others are satisfied with xterm
+                if [ -z "$(TERM=xterm+sl tput tsl 2>/dev/null)" ]; then
+                    return
                 else
                     termType="xterm+sl"
                 fi
             fi
             
-            titleStr="$(TERM=$termType tput tsl)$@$(TERM=$termType tput fsl)";;
-        putty) titleStr="$(tput tsl)$@$(tput fsl)";;
-        *) titleStr="";;
+            titleStr="$(TERM=$termType tput tsl)$@$(TERM=$termType tput fsl)"
+            
+            ;;
+        putty)
+            titleStr="$(tput tsl)$@$(tput fsl)"
+            
+            ;;
+        *)
+            titleStr=""
+            
+            ;;
     esac
     
     echo -n $titleStr
@@ -87,12 +100,16 @@ function preexec() { :; }
 function preexec_invoke()
 {
     #if returning from the command, do nothing
-    [ -n "$COMP_LINE" ] && return
+    if [ -n "$COMP_LINE" ]; then
+        return
+    fi
     
     local this_command=`history 1 | sed -e "s/^[ ]*[0-9]*[ ]*//g"`
     local curdir=${PWD}
     
-    [ "$curdir" == "$HOME" ] && curdir="~"
+    if [ "$curdir" == "$HOME" ]; then
+        curdir="~"
+    fi
     
     echo -ne $(build_title_string "${USER}@$(hostname -s):${curdir##*/} \$$this_command")
     preexec "$this_command"
@@ -216,7 +233,7 @@ function lsinet() { netstat -nepaA inet; }
 function readout() { $@ 2>&1 | less; }
 
 #simple tmux wrapper that creates a session, if one doesn't exist, when attaching
-if [ $(command -v tmux) ]; then
+if command -v tmux >/dev/null; then
     function tmux()
     {
         local tmux=$(which tmux)
@@ -236,7 +253,7 @@ if [ $(command -v tmux) ]; then
 fi
 
 #use git for diffing, if it exists
-if [ $(command -v git) ]; then
+if command -v git >/dev/null; then
     alias diff='git diff --no-index'
 fi
 
@@ -249,7 +266,7 @@ if [ -e ~/.bashrc-site ]; then
 fi
 
 ##display some neat info on login
-if [ "$DISABLE_LOGIN_INFO" == "" ]; then
+if [ -z "$DISABLE_LOGIN_INFO" ]; then
     echo Welcome to $(tput bold)$(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
     echo System uptime: $(tput bold)$(tput setaf 1)$(~/bin/uptime)$(tput sgr0)
     echo Users connected: $(tput bold)$(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
@@ -262,7 +279,7 @@ fi
 ##run ssh-agent when logging in (if it exists)
 if command -v ssh-agent > /dev/null; then
     #only run it when first logging in, and only if it's not already running
-    if [ "$SHLVL" -eq "1" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq "0" ]; then
+    if [ $SHLVL -eq 1 -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
         eval $(ssh-agent -s)
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
         echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
@@ -290,12 +307,12 @@ function handle_logout()
             return
         fi
     else
-        if [ -n $SPAWNED_SSH_AGENT ]; then
+        if [ -n "$SPAWNED_SSH_AGENT" ]; then
             ssh-agent -k > /dev/null 2>&1
         fi
     fi
     
-    if [ ! $(command -v shuf) ]; then
+    if ! command -v shuf >/dev/null; then
         function shuf()
         {
             echo -e "1\n2\n3\n4\n5\n6"
@@ -311,9 +328,9 @@ function handle_logout()
             local bold=""
             
             #make every other word bold, alternate between lines
-            if [ $(expr $color \% 2) == 0 ] && [ $(expr $i \% 2) == 0 ]; then
+            if [ $(($color % 2)) -eq 0 -a $(($i % 2)) -eq 0 ]; then
                 bold="$(tput bold)"
-            elif [ $(expr $color \% 2) == 1 ] && [ $(expr $i \% 2) == 1 ]; then
+            elif [ $(($color % 2)) -eq 1 -a $(($i % 2)) -eq 1 ]; then
                 bold="$(tput bold)"
             fi
             
@@ -322,7 +339,7 @@ function handle_logout()
         
         echo -ne "\b.\n    "
         
-        if [ "$i" == "10" ]; then
+        if [ $i -eq 10 ]; then
             echo -e "\n"
             break
         fi
