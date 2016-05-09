@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import hashlib
+import time
+
+print(hashlib.md5(time.ctime().encode("utf-8")).hexdigest())
