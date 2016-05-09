@@ -278,8 +278,8 @@ fi
 
 ##run ssh-agent when logging in (if it exists)
 if command -v ssh-agent > /dev/null; then
-    #only run it when first logging in, and only if it's not already running
-    if [ $SHLVL -eq 1 -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
+    #only run it when first logging in, if an agent hasn't been forwarded through ssh, and only if it's not already running
+    if [ $SHLVL -eq 1 -a -z "$SSH_AUTH_SOCK" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
         eval $(ssh-agent -s)
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
         echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
@@ -355,3 +355,4 @@ trap handle_logout EXIT
 
 # :3
 function colors() { handle_logout ${@-"Colorful"}; }
+
