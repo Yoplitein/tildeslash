@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """
 Shows the system uptime in a human-friendly format.
 """
@@ -12,7 +12,7 @@ def main():
         uptime_seconds = float(f.readline().split()[0])
         uptime_string = str(timedelta(seconds=floor(uptime_seconds)))
     
-    print uptime_string
+    print(uptime_string)
 
 if __name__ == '__main__':
     main()

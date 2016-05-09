@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """
 Similar to bash's pushd/popd, using a list instead of a stack.
 
@@ -8,10 +8,11 @@ so some shell support is needed:
     function dirman() { eval $(/full/path/to/dirman $@); }
 """
 
-import sys
 import os
+import sys
 
-dirs = output = None
+dirs = None
+output = None
 changeDirs = False
 dirIndex = 0
 
@@ -244,7 +245,7 @@ def main(cmd, args):
         
         return
     
-    print output
+    print(output)
 
 if __name__ == "__main__":
     name = "dirman"
