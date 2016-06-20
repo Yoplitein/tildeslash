@@ -16,3 +16,4 @@
     graph = log --graph
     fixup = commit --amend --no-edit
     oops = reset HEAD^1
+    branches = branch -avv
