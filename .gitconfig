@@ -13,7 +13,7 @@
     co = checkout
     cm = commit
     ada = add . --all
-    graph = log --graph
+    graph = log --graph --decorate
     fixup = commit --amend --no-edit
     oops = reset HEAD^1
     branches = branch -avv
