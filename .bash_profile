@@ -283,8 +283,6 @@ if command -v ssh-agent > /dev/null; then
         eval $(ssh-agent -s)
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
         echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
-        
-        export SPAWNED_SSH_AGENT=1
     fi
     
     function fixenv()
@@ -295,6 +293,8 @@ if command -v ssh-agent > /dev/null; then
     function addkey() { ssh-add $@; }
     
     export -f fixenv addkey
+    
+    fixenv
 fi
 
 #display an interesting logout message
@@ -307,8 +307,10 @@ function handle_logout()
             return
         fi
     else
-        if [ -n "$SPAWNED_SSH_AGENT" ]; then
-            ssh-agent -k > /dev/null 2>&1
+        #if we're the last login shell for this user
+        if [ `who | grep -v tmux | grep $USER | wc -l` -eq 1 ]; then
+            #then remove all keys from the ssh agent
+            ssh-add -D
         fi
     fi
     
