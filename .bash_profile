@@ -232,26 +232,6 @@ function lsinet() { netstat -nepaA inet; }
 #view all of a command's output in less
 function readout() { $@ 2>&1 | less; }
 
-#simple tmux wrapper that creates a session, if one doesn't exist, when attaching
-if command -v tmux >/dev/null; then
-    function tmux()
-    {
-        local tmux=$(which tmux)
-        
-        if [[ $1 == at* ]]; then #attaching to a session
-            if $tmux has-session 2>/dev/null; then
-                $tmux at
-            else
-                $tmux new-session -d
-                $tmux send-keys clear\;echo\ "Created new session." C-m
-                $tmux at
-            fi
-        else
-            $tmux $@
-        fi
-    }
-fi
-
 #use git for diffing, if it exists
 if command -v git >/dev/null; then
     alias diff='git diff --no-index'
