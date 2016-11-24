@@ -215,7 +215,7 @@ fi
 function psu() { ps -u ${1-$USER}; }
 
 #searches process list, including column names
-function pss() { psa | grep -E "($@|%CPU)" | grep -v grep; }
+function pss() { psa | grep -iE "($@|^%CPU)" | grep -v grep; }
 
 #shell support for dirman
 function dirman() { eval $(~/bin/dirman $@); }
