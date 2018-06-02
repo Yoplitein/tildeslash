@@ -82,8 +82,12 @@ def main():
         encoded = urlencode({"q": args})[2:]
         encoded = encoded.replace("+", " ")
         url = searchUrl.format(encoded)
+        response = fetch(url)
         
-        print(fetch(url))
+        if sys.version_info.major == 2:
+            response = response.encode("utf-8")
+        
+        print(response)
     else:
         for index, arg in enumerate(args):
             try:
