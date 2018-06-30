@@ -60,7 +60,7 @@ def fetch(url):
     
 def internet_on():
     try:
-        urllib2.urlopen('http://216.58.192.142', timeout=3)
+        urllib2.urlopen('http://1.1.1.1', timeout=3)
         return True
     except urllib2.URLError as err: 
         return False
