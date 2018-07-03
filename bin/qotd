@@ -58,20 +58,25 @@ def parse(data):
 def fetch(url):
     return parse(get(url))
     
-def internet_on():
+def is_internet_connected():
+    import socket
+    
+    host = "1.1.1.1"
+    port = 80
+    
     try:
-        urllib2.urlopen('http://1.1.1.1', timeout=3)
+        socket.setdefaulttimeout(3)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        
         return True
-    except urllib2.URLError as err: 
+    except: 
         return False
 
 def main():
-
-    
     args = sys.argv[1:]
     
-    if internet_on() == False:
-        print("Not connected to the internet")
+    if not is_internet_connected():
+        print("Not connected to the Internet.")
         
         return
     
