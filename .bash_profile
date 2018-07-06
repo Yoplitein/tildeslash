@@ -197,6 +197,12 @@ alias man='MAN_POSIXLY_CORRECT=true man'
 alias last='last -10'
 alias lastb='lastb -10'
 
+#systemd fun
+if command -v systemctl > /dev/null; then
+    alias ctl='systemctl --user'
+    alias jctl='journalctl --user'
+fi
+
 #colors are fun! wheee!!
 alias grep='grep --color=auto'
 alias grepi='grep -i --color=auto'
