@@ -17,6 +17,7 @@
     fixup = commit --amend --no-edit
     oops = reset HEAD^1
     branches = branch -avv
+    tags = tag -l --format '%(objectname) %(refname)'
 
 [include]
     path = ~/.gitconfig-site
