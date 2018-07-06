@@ -187,7 +187,8 @@ alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
 alias cata='cat -A'
 alias less='less -R'
-alias dm='dirman'
+alias dm='dirman' #TODO: nuke dirman
+alias dirs='dirs -v'
 alias where='command -V'
 alias hexdump='hexdump -vC'
 
