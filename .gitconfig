@@ -18,6 +18,7 @@
     oops = reset HEAD^1
     branches = branch -avv
     tags = tag -l --format '%(objectname) %(refname)'
+    remotes = !git remote | xargs git remote show
 
 [include]
     path = ~/.gitconfig-site
