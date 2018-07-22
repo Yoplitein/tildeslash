@@ -284,22 +284,10 @@ if command -v ssh-agent > /dev/null; then
     fixenv
 fi
 
-#display an interesting logout message
-function handle_logout()
+# :3
+function colors()
 {
-    local message=${@-"Goodbye"}
-    
-    if [ $SHLVL -ne 1 ]; then
-        if [ "$message" == "Goodbye" ]; then 
-            return
-        fi
-    else
-        #if we're the last login shell for this user
-        if [ `who | grep -v tmux | grep $USER | wc -l` -eq 1 ]; then
-            #then remove all keys from the ssh agent
-            ssh-add -D
-        fi
-    fi
+    local message=${@-"Colorful"}
     
     if ! command -v shuf >/dev/null; then
         function shuf()
@@ -333,15 +321,4 @@ function handle_logout()
             break
         fi
     done
-    
-    if [ "$message" == "Goodbye" ]; then
-        #the CRs fix a bug where any text printed when exiting the shell will have its first character missing
-        #(I have no idea why that happens, even after three hours of debugging)
-        echo -e "\r\r\r\r\r"$(tput bold)$(tput setaf 0)"SHLVL is now $(expr $SHLVL - 1)"$(tput sgr0)
-    fi
 }
-trap handle_logout EXIT
-
-# :3
-function colors() { handle_logout ${@-"Colorful"}; }
-
