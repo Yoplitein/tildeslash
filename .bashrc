@@ -32,7 +32,6 @@ alias shlvl='echo SHLVL is $SHLVL'
 alias tree='tree -aAC'
 alias cata='cat -A'
 alias less='less -R'
-alias dm='dirman' #TODO: nuke dirman
 alias dirs='dirs -v'
 alias where='command -V'
 alias hexdump='hexdump -vC'
@@ -67,9 +66,6 @@ function psu() { ps -u ${1-$USER}; }
 
 #searches process list, including column names
 function pss() { psa | grep -iE "($@|^%CPU)" | grep -v grep; }
-
-#shell support for dirman
-function dirman() { eval $(~/bin/dirman $@); }
 
 #search files for a string in a directory
 function search() { grep -nir "$1" ${2-.}; }

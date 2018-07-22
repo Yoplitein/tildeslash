@@ -7,7 +7,7 @@
 .tmux.conf
 .vimrc
 bin/afk
-bin/dirman
+_stalebin/dirman
 bin/mkpasswd
 bin/qotd
 bin/uptime
