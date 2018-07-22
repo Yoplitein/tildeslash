@@ -3,6 +3,8 @@ if [ ! -v PS1 ]; then
     return
 fi
 
+source ~/.bashrc
+
 #enable programmable completion features
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     source /etc/bash_completion
@@ -83,8 +85,6 @@ export EDITOR=$editor
 unset editor
 
 #execute site-specific configurations
-source ~/.bashrc
-
 if [ -e ~/.bashrc-site ]; then
     source ~/.bashrc-site
 fi
