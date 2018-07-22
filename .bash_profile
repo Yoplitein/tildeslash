@@ -281,7 +281,15 @@ if command -v ssh-agent > /dev/null; then
     
     export -f fixenv addkey
     
-    fixenv
+    if [ ! -v SSH_AUTH_SOCK ]; then
+        if [ -v SSH_AGENT_PID ]; then
+            echo "$(tput setaf 1)Warning: SSH_AGENT_PID is defined but not SSH_AUTH_SOCK$(tput sgr0)"
+        else
+            fixenv
+        fi
+    else
+        echo "Note: using existing SSH agent socket at $SSH_AUTH_SOCK"
+    fi
 fi
 
 # :3
