@@ -2,7 +2,7 @@
 #warning: may contain small amounts of command-line kung-fu
 
 #if not running interactively, don't do anything
-if [ -z "$PS1" ]; then
+if [ ! -v PS1 ]; then
     return
 fi
 
@@ -134,7 +134,7 @@ BOLD_COLOR="\[$(tput bold)\]"
 
 PS1="$SETTITLE"
 
-if [ -z "$TMUX" ]; then
+if [ ! -v TMUX ]; then
     PS1="$PS1$YELLOW_COLOR[\D{%H:%M:%S}]"
 fi
 
@@ -253,7 +253,7 @@ if [ -e ~/.bashrc-site ]; then
 fi
 
 ##display some neat info on login
-if [ -z "$DISABLE_LOGIN_INFO" ]; then
+if [ ! -v DISABLE_LOGIN_INFO ]; then
     echo Welcome to $(tput bold)$(tput setaf 2)$(hostname --fqdn)$(tput sgr0)
     echo System uptime: $(tput bold)$(tput setaf 1)$(~/bin/uptime)$(tput sgr0)
     echo Users connected: $(tput bold)$(tput setaf 3)$(who -q | head -n 1 | sed 's/[ ][ ]*/, /g')$(tput sgr0)
@@ -266,7 +266,7 @@ fi
 ##run ssh-agent when logging in (if it exists)
 if command -v ssh-agent > /dev/null; then
     #only run it when first logging in, if an agent hasn't been forwarded through ssh, and only if it's not already running
-    if [ $SHLVL -eq 1 -a -z "$SSH_AUTH_SOCK" -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
+    if [ $SHLVL -eq 1 -a ! -v SSH_AUTH_SOCK -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
         eval $(ssh-agent -s)
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
         echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
@@ -313,9 +313,9 @@ function colors()
             local bold=""
             
             #make every other word bold, alternate between lines
-            if [ $(($color % 2)) -eq 0 -a $(($i % 2)) -eq 0 ]; then
+            if [ $((color % 2)) -eq 0 -a $((i % 2)) -eq 0 ]; then
                 bold="$(tput bold)"
-            elif [ $(($color % 2)) -eq 1 -a $(($i % 2)) -eq 1 ]; then
+            elif [ $((color % 2)) -eq 1 -a $((i % 2)) -eq 1 ]; then
                 bold="$(tput bold)"
             fi
             
