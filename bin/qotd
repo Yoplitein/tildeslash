@@ -81,16 +81,16 @@ def main():
         return
     
     if len(args) == 0:
-        print(fetch(qotdUrl))
+        print(fetch(qotdUrl).encode("utf-8"))
         
         return
     
     cmd = args[0]
     
     if cmd == "latest":
-        print(fetch(latestUrl))
+        print(fetch(latestUrl).encode("utf-8"))
     elif cmd == "random":
-        print(fetch(randomUrl))
+        print(fetch(randomUrl).encode("utf-8"))
     elif cmd == "search":
         if len(args) == 0:
             print("Search for what?")
@@ -106,7 +106,7 @@ def main():
         if sys.version_info.major == 2:
             response = response.encode("utf-8")
         
-        print(response)
+        print(response.encode("utf-8"))
     else:
         for index, arg in enumerate(args):
             try:
@@ -119,7 +119,7 @@ def main():
                 else:
                     error(str(err))
         
-        print(fetch(idsUrl.format(",".join(args))))
+        print(fetch(idsUrl.format(",".join(args))).encode("utf-8"))
 
 if __name__ == '__main__':
     main()
