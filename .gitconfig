@@ -19,6 +19,7 @@
     branches = branch -avv
     tags = tag -l --format '%(objectname) %(refname)'
     remotes = !git remote | xargs git remote show
+    diffc = diff --cached
 
 [include]
     path = ~/.gitconfig-site
