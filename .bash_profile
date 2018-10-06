@@ -102,13 +102,13 @@ fi
 
 ##run ssh-agent when logging in (if it exists)
 if command -v ssh-agent > /dev/null; then
-    function fixenv()
+    function fixsshenv()
     {
         export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
     }
     function addkey() { ssh-add $@; }
     
-    export -f fixenv addkey
+    export -f fixsshenv addkey
     
     #only run it if an agent hasn't been forwarded through ssh, and if it's not already running
     if [ ! -v SSH_AUTH_SOCK -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
@@ -122,7 +122,7 @@ if command -v ssh-agent > /dev/null; then
         if [ -v SSH_AGENT_PID ]; then
             echo "$(tput setaf 1)Warning: SSH_AGENT_PID is defined but not SSH_AUTH_SOCK$(tput sgr0)"
         else
-            fixenv
+            fixsshenv
         fi
     elif [ ! -v spawnedAgent ]; then
         echo "Note: using existing SSH agent socket at $SSH_AUTH_SOCK"
