@@ -114,6 +114,7 @@ if command -v ssh-agent > /dev/null; then
     if [ ! -v SSH_AUTH_SOCK -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
         eval $(ssh-agent -s)
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
+        fixsshenv
         
         spawnedAgent=1
     fi
