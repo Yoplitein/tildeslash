@@ -105,7 +105,6 @@ if command -v ssh-agent > /dev/null; then
     function fixenv()
     {
         export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
-        export SSH_AGENT_PID=$(cat ~/.ssh/agent.pid)
     }
     function addkey() { ssh-add $@; }
     
@@ -115,7 +114,6 @@ if command -v ssh-agent > /dev/null; then
     if [ ! -v SSH_AUTH_SOCK -a "$(psu | grep ssh-agent | grep -v grep | wc -l)" -eq 0 ]; then
         eval $(ssh-agent -s)
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
-        echo -n "$SSH_AGENT_PID" > ~/.ssh/agent.pid
         
         spawnedAgent=1
     fi
