@@ -182,3 +182,10 @@ fi
 
 export PS1="$PS1$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $RED_COLOR\$(err=\$?; if [ \$err -ne 0 ]; then echo \"\$err \"; fi)$CYAN_COLOR\$$NORMAL_COLOR"
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
+
+##include completions on arch systems (possibly elsewhere?)
+completionsDir=/usr/share/bash-completion/completions
+
+if [ -d $completionsDir ]; then
+    source $completionsDir/*
+fi
