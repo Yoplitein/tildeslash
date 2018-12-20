@@ -72,6 +72,12 @@ def is_internet_connected():
     except: 
         return False
 
+def write(out):
+    if sys.version_info.major == 3 and type(out) is bytes:
+        out = out.decode("utf-8")
+    
+    print(out)
+
 def main():
     args = sys.argv[1:]
     
@@ -81,16 +87,16 @@ def main():
         return
     
     if len(args) == 0:
-        print(fetch(qotdUrl).encode("utf-8"))
+        write(fetch(qotdUrl).encode("utf-8"))
         
         return
     
     cmd = args[0]
     
     if cmd == "latest":
-        print(fetch(latestUrl).encode("utf-8"))
+        write(fetch(latestUrl).encode("utf-8"))
     elif cmd == "random":
-        print(fetch(randomUrl).encode("utf-8"))
+        write(fetch(randomUrl).encode("utf-8"))
     elif cmd == "search":
         if len(args) == 0:
             print("Search for what?")
@@ -103,23 +109,20 @@ def main():
         url = searchUrl.format(encoded)
         response = fetch(url)
         
-        if sys.version_info.major == 2:
-            response = response.encode("utf-8")
-        
-        print(response.encode("utf-8"))
+        write(response.encode("utf-8"))
     else:
         for index, arg in enumerate(args):
             try:
                 int(arg)
             except ValueError as err:
                 if index == 0:
-                    print("Don't know how to", cmd)
+                    write("Don't know how to", cmd)
                     
                     return
                 else:
                     error(str(err))
         
-        print(fetch(idsUrl.format(",".join(args))).encode("utf-8"))
+        write(fetch(idsUrl.format(",".join(args))).encode("utf-8"))
 
 if __name__ == '__main__':
     main()
