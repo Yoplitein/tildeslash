@@ -116,7 +116,7 @@ def main():
                 int(arg)
             except ValueError as err:
                 if index == 0:
-                    write("Don't know how to", cmd)
+                    write("Don't know how to {}".format(cmd).encode("utf-8"))
                     
                     return
                 else:
