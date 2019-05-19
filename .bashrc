@@ -180,7 +180,7 @@ if [ ! -v TMUX ]; then
     PS1="$PS1$YELLOW_COLOR[\D{%H:%M:%S}]"
 fi
 
-export PS1="$PS1$GREEN_COLOR\u$RED_COLOR@$BLUE_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $RED_COLOR\$(err=\$?; if [ \$err -ne 0 ]; then echo \"\$err \"; fi)$CYAN_COLOR\$$NORMAL_COLOR"
+export PS1="$PS1$GREEN_COLOR\u$BLUE_COLOR@$RED_COLOR\h$BOLD_COLOR$PURPLE_COLOR:$YELLOW_COLOR\W $RED_COLOR\$(err=\$?; if [ \$err -ne 0 ]; then echo \"\$err \"; fi)$CYAN_COLOR\$$NORMAL_COLOR"
 unset SETTITLE NORMAL_COLOR RED_COLOR GREEN_COLOR YELLOW_COLOR BLUE_COLOR PURPLE_COLOR CYAN_COLOR BOLD_COLOR
 
 ##include completions on arch systems (possibly elsewhere?)
