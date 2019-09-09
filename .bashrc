@@ -58,6 +58,7 @@ fi
 if [ "$DISTRO" == "arch" ]; then
     alias netstat='ss'
     alias pacman='pacman --color=auto'
+    alias pacaur='pacaur --color=auto'
 fi
 
 ##functions
