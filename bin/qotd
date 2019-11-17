@@ -105,7 +105,7 @@ def main():
         
         args = " ".join(args[1:])
         encoded = urlencode({"q": args})[2:]
-        encoded = encoded.replace("+", " ")
+        encoded = encoded.replace("+", "%20")
         url = searchUrl.format(encoded)
         response = fetch(url)
         
