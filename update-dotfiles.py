@@ -5,7 +5,7 @@ from urllib2 import Request, build_opener, HTTPError, URLError
 from argparse import ArgumentParser
 import os, syslog, time, subprocess, stat, glob
 
-VERSION = "1.17"
+VERSION = "1.18"
 REPO_NAME = "Yoplitein/tildeslash"
 REPO_HOST = "bitbucket"
 REPO_TYPE = "git"
@@ -60,7 +60,8 @@ def getBaseURLBitbucket():
         raise ValueError("Unknown repo type " + REPO_TYPE)
     
     revisionHash = json.loads(
-            getFile("http://api.bitbucket.org/1.0/repositories/" + REPO_NAME + "/changesets/" + branch, "changesets"))["node"]
+        getFile("http://api.bitbucket.org/2.0/repositories/" + REPO_NAME + "/commit/" + branch, "branchInfo")
+    )["hash"]
     
     return "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
 
