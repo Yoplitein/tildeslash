@@ -20,6 +20,8 @@
     tags = tag -l --format '%(objectname) %(refname)'
     remotes = !git remote | xargs git remote show
     diffc = diff --cached
+    wdiff = diff --word-diff
+    wdiffc = diff --word-diff --cached
 
 [include]
     path = ~/.gitconfig-site
