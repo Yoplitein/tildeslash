@@ -27,16 +27,11 @@ alias ls='ls -AF --color=auto'
 alias lsl='ls -AFhl --color=auto'
 alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
 alias psa='ps -A'
-alias cls='clear'
-alias shlvl='echo SHLVL is $SHLVL'
-alias tree='tree -aAC'
 alias cata='cat -A'
 alias dirs='dirs -v'
 alias where='command -V'
-alias hexdump='hexdump -vC'
 alias grep='grep --color=auto'
 alias grepi='grep -i --color=auto'
-alias egrep='grep -E --color=auto'
 alias du='du -h'
 alias df='df -h'
 alias last='last -10'
@@ -51,7 +46,6 @@ if command -v git >/dev/null; then
 fi
 
 if [ "$DISTRO" == "arch" ]; then
-    alias netstat='ss'
     alias pacman='pacman --color=auto'
     alias pacaur='pacaur --color=auto'
 fi
@@ -68,9 +62,6 @@ function search() { grep -nir "$1" ${2-.}; }
 
 #you never know when you might want to quickly browse the current directory through a browser, or something
 function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
-
-#prints all active connections (functionize'd for exportability to root shells)
-function lsinet() { netstat -nepaA inet; }
 
 #view all of a command's output in less
 function readout() { ( exec $@ ) 2>&1 | $PAGER; }
