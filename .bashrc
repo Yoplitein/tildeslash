@@ -23,8 +23,8 @@ stty stop undef
 
 ##aliases
 #general aliases
-alias ls='ls -A --color=auto'
-alias lsl='ls -Ahl --color=auto'
+alias ls='ls -AF --color=auto'
+alias lsl='ls -AFhl --color=auto'
 alias ps='ps -o %cpu:4,%mem:4,nice:3,start:5,user:15,pid:5,cmd'
 alias psa='ps -A'
 alias cls='clear'
