@@ -59,7 +59,6 @@ export LESS_TERMCAP_se=$(tput sgr0)
 export LESS_TERMCAP_so=$(tput setab 4; tput bold; tput setaf 2)
 export LESS_TERMCAP_ue=$(tput sgr0)
 export LESS_TERMCAP_us=$(tput bold; tput setaf 3)
-export GROFF_NO_SGR=yes #stupid openSUSE behaviour fix
 
 ##misc
 #add ~/bin, /sbin, /usr/sbin to path

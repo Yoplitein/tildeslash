@@ -40,11 +40,7 @@ alias grepi='grep -i --color=auto'
 alias egrep='grep -E --color=auto'
 alias du='du -h'
 alias df='df -h'
-
-#stupid openSUSE behaviour fixes
-alias man='MAN_POSIXLY_CORRECT=true man'
 alias last='last -10'
-alias lastb='lastb -10'
 
 if command -v systemctl > /dev/null; then
     alias ctl='systemctl --user'
