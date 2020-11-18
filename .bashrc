@@ -190,3 +190,8 @@ completionsDir=/usr/share/bash-completion/completions
 if [ -d $completionsDir ]; then
     source $completionsDir/*
 fi
+
+# include machine-specific configuration
+if [ -e ~/.bashrc-site ]; then
+    source ~/.bashrc-site
+fi

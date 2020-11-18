@@ -84,9 +84,9 @@ fi
 export EDITOR=$editor
 unset editor
 
-#execute site-specific configurations
-if [ -e ~/.bashrc-site ]; then
-    source ~/.bashrc-site
+# include machine-specific configuration
+if [ -e ~/.bash_profile-site ]; then
+    source ~/.bash_profile-site
 fi
 
 ##display some neat info on login
