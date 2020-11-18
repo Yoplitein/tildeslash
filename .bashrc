@@ -73,7 +73,7 @@ function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
 function lsinet() { netstat -nepaA inet; }
 
 #view all of a command's output in less
-function readout() { $@ 2>&1 | less; }
+function readout() { ( exec $@ ) 2>&1 | $PAGER; }
 
 # :3
 function colors()
