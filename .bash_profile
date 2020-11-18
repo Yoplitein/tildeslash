@@ -51,7 +51,8 @@ if tput hs; then
     trap "preexec_invoke" DEBUG
 fi
 
-#add colors to less
+#add default flags and colors to less
+export LESS="-Ri" # preserve color escapes, enable contextual case sensitivity in searches
 export LESS_TERMCAP_mb=$(tput blink; tput setaf 6)
 export LESS_TERMCAP_md=$(tput bold; tput setaf 1)
 export LESS_TERMCAP_me=$(tput sgr0)
