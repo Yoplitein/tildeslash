@@ -127,5 +127,10 @@ if command -v ssh-agent > /dev/null; then
         fi
     elif [ ! -v spawnedAgent ]; then
         echo "Note: using existing SSH agent socket at $SSH_AUTH_SOCK"
+        
+        if [ ! "$SSH_AUTH_SOCK" == "$HOME/.ssh/agent.sock" ]; then
+            ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/agent.sock"
+            fixsshenv
+        fi
     fi
 fi
