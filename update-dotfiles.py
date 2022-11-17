@@ -3,9 +3,8 @@
 from argparse import ArgumentParser
 from urllib.error import URLError
 from urllib.request import Request, build_opener, HTTPError
-import os, syslog, time, subprocess, stat
+import os, syslog, stat
 
-VERSION = "1.18"
 REPO_NAME = "Yoplitein/tildeslash"
 REPO_HOST = "bitbucket"
 REPO_TYPE = "git"
@@ -83,39 +82,6 @@ def getBaseURL():
     else:
         log(f"Unknown repository host '{REPO_HOST}'")
 
-def tryUpdateSelf():
-    repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py", encoding="utf-8")
-    scope = {}
-    
-    try:
-        exec(repoUpdateDotfiles, scope)
-        
-        if scope["VERSION"] != VERSION: #We're out of date! D:
-            log("Attempting to update self..")
-            
-            fullFileName = os.path.abspath(__file__)
-            file = open(fullFileName, "w")
-            
-            file.truncate()
-            file.write(repoUpdateDotfiles)
-            file.close()
-            
-            log("Updated! Re-running script.")
-            subprocess.call(os.sys.argv + ["-n"])
-            
-            raise SystemExit
-    except (KeyError, Exception) as e:
-        if type(e) is KeyError:
-            msg = "Remote update-dotfiles does not have a version, will not update"
-        elif type(e) is SystemExit:
-            raise
-        else:
-            msg = "Remote update-dotfiles threw exception, will not update."
-        
-        log(msg)
-        
-        raise SystemExit(1)
-
 def parseFileList(fileList):
     fileFolderList = fileList.split("--FOLDERS--")
     fileNames = fileFolderList[0].split("\n")
@@ -149,40 +115,12 @@ def main():
                 help="directory to save files to, default ~/", default=os.getenv("HOME"))
     parser.add_argument("-C", "--no-check-hash", dest="logHash",
                 help="don't check for revision hash in .dotfileshash", action="store_false", default=True)
-    parser.add_argument("-v", "--version", dest="checkVersion",
-                help="print update-dotfiles version", action="store_true", default=False)
-    parser.add_argument("-V", dest="checkFilesVersion",
+    parser.add_argument("-v", dest="checkFilesVersion",
                 help="print dotfiles version and exit.", action="store_true", default=False)
     parser.add_argument("-r", "--remote", dest="useRemote",
                 help="checks remote (repository) version instead", action="store_true", default=False)
-    parser.add_argument("-n", "--no-update", dest="doUpdate",
-                help="don't attempt to update self", action="store_false", default=True)
-    parser.add_argument("-f", "--force-update", dest="forceUpdate", action="store_true", default=False,
-                help="attempt to force update self")
     
     args = parser.parse_args()
-    
-    if args.checkVersion:
-        if args.useRemote:
-            repoUpdateDotfiles = getFile(getBaseURL() + "update-dotfiles.py", "update-dotfiles.py", encoding="utf-8")
-            scope = {}
-            
-            try:
-                exec(repoUpdateDotfiles, scope)
-                
-                VERSION = "(remote) " + scope["VERSION"]
-            except:
-                print("Remote update-dotfiles did not execute properly.")
-                
-                raise SystemExit
-        
-        print("update-dotfiles version %s" % VERSION)
-        
-        fileMTime = time.ctime(os.path.getmtime(__file__))
-        
-        print("Script last updated on %s" % fileMTime)
-        
-        raise SystemExit
     
     if args.checkFilesVersion:
         if args.useRemote:
@@ -219,14 +157,6 @@ def main():
             raise SystemExit(1)
     
     baseURL = getBaseURL()
-    
-    #attempt to update
-    if ((os.geteuid() == 0 #if we're root
-         or (os.environ["HOME"] in os.path.abspath(__file__))) #or if the script is in the user's home directory
-         or args.forceUpdate #or we're forced
-         and args.doUpdate): #unless updating is turned off entirely
-        
-        tryUpdateSelf()
     
     #Change to the specified directory
     os.chdir(args.directory)
