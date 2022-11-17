@@ -1,9 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #This fetches the latest files from the repo and puts them in the given folder
-from __future__ import with_statement
-from urllib2 import Request, build_opener, HTTPError, URLError
 from argparse import ArgumentParser
-import os, syslog, time, subprocess, stat, glob
+from urllib.error import URLError
+from urllib.request import Request, build_opener, HTTPError
+import os, syslog, time, subprocess, stat
 
 VERSION = "1.18"
 REPO_NAME = "Yoplitein/tildeslash"
@@ -24,30 +24,31 @@ except ImportError:
 args = log = baseURL = revisionHash = None
 opener = build_opener()
 
-def getFile(url, logName):
+def getFile(url, logName, encoding=None):
     file = None
     
     try:
         req = Request(url)
-        
         req.add_header("Pragma", "no-cache")
         
         file = opener.open(req)
+        contents = file.read()
+        if encoding != None:
+            contents = contents.decode(encoding)
+        return contents
     except (HTTPError, URLError) as e:
         if type(e) is URLError:
             message = e.reason.strerror.lower()
         else:
-            message = "server returned: %s" % str(e)
+            message = f"server returned: {e}"
         
-        log("Error fetching %s, %s" % (logName, message))
+        log(f"Error fetching {logName}, {message}")
         
-        raise SystemExit, 1
+        raise SystemExit(1)
+    finally:
+        if file:
+            file.close()
     
-    contents = file.read()
-    
-    file.close()
-    
-    return contents    
 
 def getBaseURLBitbucket():
     global revisionHash
@@ -60,7 +61,7 @@ def getBaseURLBitbucket():
         raise ValueError("Unknown repo type " + REPO_TYPE)
     
     revisionHash = json.loads(
-        getFile("http://api.bitbucket.org/2.0/repositories/" + REPO_NAME + "/commit/" + branch, "branchInfo")
+        getFile("http://api.bitbucket.org/2.0/repositories/" + REPO_NAME + "/commit/" + branch, "branchInfo", encoding="utf-8")
     )["hash"]
     
     return "https://bitbucket.org/" + REPO_NAME + "/raw/" + revisionHash + "/"
@@ -70,7 +71,7 @@ def getBaseURLGithub():
     
     assert REPO_TYPE == "git", "Github only supports git!"
     
-    revisionHash = json.loads(getFile("https://api.github.com/repos/" + REPO_NAME + "/git/refs", "refs"))[0]["object"]["url"].split("/")[-1]
+    revisionHash = json.loads(getFile("https://api.github.com/repos/" + REPO_NAME + "/git/refs", "refs", encoding="utf-8"))[0]["object"]["url"].split("/")[-1]
     
     return "https://github.com/" + REPO_NAME + "/raw/" + revisionHash + "/"
 
@@ -80,14 +81,14 @@ def getBaseURL():
     elif REPO_HOST == "github":
         return getBaseURLGithub()
     else:
-        log("Unknown repository host '%s'" % (REPO_HOST,))
+        log(f"Unknown repository host '{REPO_HOST}'")
 
 def tryUpdateSelf():
-    repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py")
+    repoUpdateDotfiles = getFile(baseURL + "update-dotfiles.py", "update-dotfiles.py", encoding="utf-8")
     scope = {}
     
     try:
-        exec repoUpdateDotfiles in scope
+        exec(repoUpdateDotfiles, scope)
         
         if scope["VERSION"] != VERSION: #We're out of date! D:
             log("Attempting to update self..")
@@ -113,7 +114,7 @@ def tryUpdateSelf():
         
         log(msg)
         
-        raise SystemExit, 1
+        raise SystemExit(1)
 
 def parseFileList(fileList):
     fileFolderList = fileList.split("--FOLDERS--")
@@ -163,39 +164,35 @@ def main():
     
     if args.checkVersion:
         if args.useRemote:
-            repoUpdateDotfiles = getFile(getBaseURL() + "update-dotfiles.py", "update-dotfiles.py")
+            repoUpdateDotfiles = getFile(getBaseURL() + "update-dotfiles.py", "update-dotfiles.py", encoding="utf-8")
             scope = {}
             
             try:
-                exec repoUpdateDotfiles in scope
+                exec(repoUpdateDotfiles, scope)
                 
                 VERSION = "(remote) " + scope["VERSION"]
             except:
-                print "Remote update-dotfiles did not execute properly."
+                print("Remote update-dotfiles did not execute properly.")
                 
                 raise SystemExit
         
-        print "update-dotfiles version %s" % VERSION
+        print("update-dotfiles version %s" % VERSION)
         
         fileMTime = time.ctime(os.path.getmtime(__file__))
         
-        print "Script last updated on %s" % fileMTime
+        print("Script last updated on %s" % fileMTime)
         
         raise SystemExit
     
     if args.checkFilesVersion:
         if args.useRemote:
             getBaseURL()
-            
-            print "Remote dotfiles are at version", revisionHash
-            
+            print("Remote dotfiles are at version", revisionHash)
             raise SystemExit
         else:
-            print "Dotfiles are at version",
-            
-            with open("%s/.dotfileshash" % (args.directory,), "r") as hash:
-                print hash.read(), "\b."
-            
+            print("Dotfiles are at version ", end="")
+            with open(f"{args.directory}/.dotfileshash", "r") as hash:
+                print(hash.read().strip())
             raise SystemExit
     
     #Log to stdout by default
@@ -205,7 +202,7 @@ def main():
     
     #Log to syslog if running silently
     def silentLog(msg):
-        syslog.syslog("[%s:%s] %s" % (getUsername(), os.path.basename(os.getcwd()), msg))
+        syslog.syslog(f"[{getUsername()}:{os.path.basename(os.getcwd())}] {msg}")
     
     if args.runSilent:
         log = silentLog
@@ -214,12 +211,12 @@ def main():
     
     #Confirm, for safety's sake
     if not args.runSilent:
-        yesNo = raw_input("Are you sure? (Y/n) ")
+        yesNo = input("Are you sure? (Y/n) ")
         
         if yesNo.lower() not in ["y", ""]:
             log("Aborting.")
             
-            raise SystemExit, 1
+            raise SystemExit(1)
     
     baseURL = getBaseURL()
     
@@ -250,7 +247,7 @@ def main():
             pass
     
     #Get the file and folder lists
-    fileNames, folderNames = parseFileList(getFile(baseURL + "files.txt", "file and folder list"))
+    fileNames, folderNames = parseFileList(getFile(baseURL + "files.txt", "file and folder list", encoding="utf-8"))
     
     #Make sure each folder exists
     for folder in folderNames:
@@ -264,7 +261,7 @@ def main():
                 realFileName = fileName.split("_stale")[1]
                 
                 os.remove(realFileName)
-                log("Removing stale file %s" % realFileName)
+                log(f"Removing stale file {realFileName}")
             except:
                 pass
             finally:
@@ -276,17 +273,17 @@ def main():
         bbFile = getFile(baseURL + fileName, fileName)
         
         try:
-            with open(fileName, "w") as file:
+            with open(fileName, "wb") as file:
                 file.write(bbFile)
                 file.flush()
                 file.close()
         except IOError as e:
-            log("Error: Unable to write %s to disk. (%s)" % (fileName, e))
+            log(f"Error: Unable to write {fileName} to disk. ({e})")
             log("Exiting.")
-            raise SystemExit, 1
+            raise SystemExit(1)
         
         if not args.runSilent:
-            log("Wrote %s to disk." % fileName)
+            log(f"Wrote {fileName} to disk.")
     
     #make files in bin/ executable
     if os.path.exists("bin"):
@@ -298,9 +295,9 @@ def main():
             
             try:
                 os.chmod(file, mode.st_mode | stat.S_IEXEC)
-                log("Marking %s as executable" % (file,))
+                log(f"Marking {file} as executable")
             except IOError:
-                log("Failed to change mode of %s" % (file,))
+                log(f"Failed to change mode of {file}")
     
     #Write hash to .dotfileshash
     if args.logHash:
@@ -309,9 +306,9 @@ def main():
                 hashFile.write(revisionHash)
                 hashFile.flush()
         except IOError as e:
-            log("Unable to save revision hash. (%s)" % e)
+            log(f"Unable to save revision hash. ({e})")
     
-    log("Successfully updated all files to revision %s." % revisionHash)
+    log(f"Successfully updated all files to revision {revisionHash}.")
 
 if __name__ == "__main__":
     main()
