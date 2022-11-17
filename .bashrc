@@ -61,7 +61,7 @@ function pss() { psa | grep -iE "($@|^%CPU)" | grep -v grep; }
 function search() { grep -nir "$1" ${2-.}; }
 
 #you never know when you might want to quickly browse the current directory through a browser, or something
-function httpserv() { python -m SimpleHTTPServer ${1-"8000"}; }
+function httpserv() { python -m http.server ${1-"8000"}; }
 
 #view all of a command's output in less
 function readout() { ( exec $@ ) 2>&1 | $PAGER; }
