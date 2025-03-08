@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -e
+progName="$(basename "$0")"
+
+if [[ $# -lt 3 ]]; then
+	echo "$#"
+	echo >&2 "Usage: $progName <files or dirs...> -- <program> [args]"
+	exit 1
+fi
+
+args=("$@")
+paths=()
+program=()
+pathsDone=false
+for ((i = 0; i < $#; i++)); do
+	arg="${args[i]}"
+	if [[ "$arg" == "--" ]]; then
+		pathsDone=true
+		continue
+	fi
+	if $pathsDone; then
+		program+=("$arg")
+	else
+		paths+=("$arg")
+	fi
+done
+
+if ! $pathsDone; then
+	echo >&2 'Expected `--` to separate paths from program arguments'
+	exit 1
+fi
+
+while true; do
+	clear
+	date
+	"${program[@]}" || echo >&2 "[watchfs] Program failed, exited with status $?"
+	inotifywait -qqe close_write "${paths[@]}"
+done
