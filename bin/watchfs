@@ -4,7 +4,6 @@ set -e
 progName="$(basename "$0")"
 
 if [[ $# -lt 3 ]]; then
-	echo "$#"
 	echo >&2 "Usage: $progName <files or dirs...> -- <program> [args]"
 	exit 1
 fi
