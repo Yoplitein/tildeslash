@@ -30,6 +30,10 @@ for ((i = 0; i < $#; i++)); do
 				;;
 		esac
 		
+		if [[ ! ( -f "$arg" || -d "$arg" ) ]]; then
+			echo >&2 "$arg does not exist, or is not a file/directory"
+			exit 1
+		fi
 		paths+=("$arg")
 	fi
 done
