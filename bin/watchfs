@@ -15,13 +15,14 @@ program=()
 pathsDone=false
 for ((i = 0; i < $#; i++)); do
 	arg="${args[i]}"
-	if [[ "$arg" == "--" ]]; then
-		pathsDone=true
-		continue
-	fi
 	if $pathsDone; then
 		program+=("$arg")
 	else
+		if [[ "$arg" == "--" ]]; then
+			pathsDone=true
+			continue
+		fi
+	
 		paths+=("$arg")
 	fi
 done
