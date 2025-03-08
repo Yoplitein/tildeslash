@@ -11,6 +11,7 @@ fi
 
 args=("$@")
 paths=()
+inotifyFlags=()
 program=()
 pathsDone=false
 for ((i = 0; i < $#; i++)); do
@@ -18,11 +19,17 @@ for ((i = 0; i < $#; i++)); do
 	if $pathsDone; then
 		program+=("$arg")
 	else
-		if [[ "$arg" == "--" ]]; then
-			pathsDone=true
-			continue
-		fi
-	
+		case "$arg" in
+			"--")
+				pathsDone=true
+				continue
+				;;
+			"-r" | "--recursive")
+				inotifyFlags+="-r"
+				continue
+				;;
+		esac
+		
 		paths+=("$arg")
 	fi
 done
@@ -36,5 +43,5 @@ while true; do
 	clear
 	date
 	"${program[@]}" || echo >&2 "[watchfs] Program failed, exited with status $?"
-	inotifywait -qqe close_write "${paths[@]}"
+	inotifywait -qqe close_write "${inotifyFlags[@]}" "${paths[@]}"
 done
